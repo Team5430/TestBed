@@ -18,7 +18,11 @@ public class RobotContainer {
   private CommandJoystick driverJoystick = new CommandJoystick(0);
 
   public RobotContainer() {
+  //apply set bindings
     configureBindings();
+
+  //apply motor config
+    m_TestBed.motorConfig();
 
   //set default command for driver control
     m_TestBed.setDefaultCommand(
