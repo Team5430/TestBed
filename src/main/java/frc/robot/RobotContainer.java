@@ -14,22 +14,21 @@ public class RobotContainer {
 
 //init subsystem
   private TestBed m_TestBed = new TestBed();
-//init new joystick
+//init new joystick on usb port 0
   private CommandJoystick driverJoystick = new CommandJoystick(0);
 
   public RobotContainer() {
     configureBindings();
 
+  //set default command for driver control
     m_TestBed.setDefaultCommand(
       new RunCommand( () -> m_TestBed.drive(driverJoystick.getDirectionDegrees(), driverJoystick.getMagnitude()),
        m_TestBed));
 
   }
 
-  private void configureBindings() {
-
-  
-  }
+  //contorller bindings here
+  private void configureBindings() {}
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");

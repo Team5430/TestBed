@@ -24,27 +24,32 @@ public class SwerveModule {
     }
 
     private void motorConfig(){
-
+//create config objects
         TalonFXConfiguration angleConfig = new TalonFXConfiguration();
         TalonFXConfiguration driveConfig = new TalonFXConfiguration();
 
+//goes towards closest value that is equivalent to setpoint
         angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
+//gear ratio
         angleConfig.Feedback.SensorToMechanismRatio = angleRatio;
+//proportional gains
         angleConfig.Slot0.kP = angle_kP;
 
         driveConfig.Slot0.kP = drive_kP;
         driveConfig.Feedback.SensorToMechanismRatio = driveRatio;
 
-
+//apply configurations
         angleMotor.getConfigurator().apply(angleConfig);
         driveMotor.getConfigurator().apply(driveConfig);
 
     }
 
-    public void setAngle(double wanted){
-        angleMotor.setControl(new PositionDutyCycle(wanted/angle));
+//any degree value will be turned into rotational value
+    public void setAngle(double input){
+        angleMotor.setControl(new PositionDutyCycle(input/angle));
     }
 
+//power to motor that moves the wheel
     public void setThrottle(double throttle){
         driveMotor.setControl(new DutyCycleOut(throttle));
     }
