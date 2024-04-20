@@ -9,12 +9,12 @@ public class SwerveModule {
 
     private TalonFX angleMotor;
     private TalonFX driveMotor;
-    private double angle = 360;
-    private double angleRatio;
-    private double driveRatio;
+    private double Angle = 360;
+    private double angleRatio = 150/7;
+    private double driveRatio = 8.14;
 
-    private double angle_kP;
-    private double drive_kP;
+    private double angle_kP = 0.6;
+    private double drive_kP = .15;
 
 
     public SwerveModule(int AngleMotorCANid, int DriveMotorCANid){
@@ -42,11 +42,15 @@ public class SwerveModule {
         angleMotor.getConfigurator().apply(angleConfig);
         driveMotor.getConfigurator().apply(driveConfig);
 
+//zero encoders
+        angleMotor.setPosition(0);
+        driveMotor.setPosition(0);
+
     }
 
 //any degree value will be turned into rotational value
     public void setAngle(double input){
-        angleMotor.setControl(new PositionDutyCycle(input/angle));
+        angleMotor.setControl(new PositionDutyCycle(input/Angle));
     }
 
 //power to motor that moves the wheel
@@ -67,5 +71,21 @@ public class SwerveModule {
         drive_kP = DriveMotorkP;
     }
 
+    public double driveMotorEncoder(){
+       return driveMotor.getRotorPosition().getValueAsDouble();
+    }
+
+    public double angleMotorEncoder(){
+        return angleMotor.getRotorPosition().getValueAsDouble();
+    }
+    
+    public void Angle(double angle, double distance){
+        setAngle(angle);
+        double circumfrence = 3.75 * Math.PI;
+        double rotations = distance/circumfrence;
+        driveMotor.setPosition(0);   
+        driveMotor.setControl(new PositionDutyCycle(rotations));
+
+    }
 
 }
