@@ -10,12 +10,11 @@ public class SwerveModule {
     private TalonFX angleMotor;
     private TalonFX driveMotor;
     private double Angle = 360;
-    private double angleRatio = 150/7;
+    private double angleRatio = 21.42857;
     private double driveRatio = 8.14;
 
     private double angle_kP = 0.6;
     private double drive_kP = .15;
-
 
     public SwerveModule(int AngleMotorCANid, int DriveMotorCANid){
         angleMotor = new TalonFX(AngleMotorCANid);
@@ -34,7 +33,6 @@ public class SwerveModule {
         angleConfig.Feedback.SensorToMechanismRatio = angleRatio;
 //proportional gains
         angleConfig.Slot0.kP = angle_kP;
-
         driveConfig.Slot0.kP = drive_kP;
         driveConfig.Feedback.SensorToMechanismRatio = driveRatio;
 
@@ -60,15 +58,18 @@ public class SwerveModule {
 
     public void setAngleRatio(double ratio){
         angleRatio = ratio;
+        motorConfig();
     }
 
     public void setDriveRatio(double ratio){
         driveRatio = ratio;
+        motorConfig();
     }
 
     public void SetGains(double AngleMotorkP, double DriveMotorkP){
         angle_kP = AngleMotorkP;
         drive_kP = DriveMotorkP;
+        motorConfig();
     }
 
     public double driveMotorEncoder(){
@@ -78,7 +79,8 @@ public class SwerveModule {
     public double angleMotorEncoder(){
         return angleMotor.getRotorPosition().getValueAsDouble();
     }
-    
+    //Calculations to find the rotations needed to travel a given distance
+
     public void Angle(double angle, double distance){
         setAngle(angle);
         double circumfrence = 3.75 * Math.PI;

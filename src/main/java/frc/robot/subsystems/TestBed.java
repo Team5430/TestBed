@@ -12,36 +12,45 @@ public class TestBed extends SubsystemBase{
 
 //constants
     private double kP = .3;
-
-    SwerveModule module = new SwerveModule(0, 1);
-
+   
+    SwerveModule moduleA = new SwerveModule(0, 1);
+    SwerveModule moduleB = new SwerveModule(6,7);
     public void motorConfig(){
-        module.SetGains(kP, kP);
+        moduleA.SetGains(kP, kP);
     }
         //setAngle will set the directional angle
     public void drive(double angle, double power){
-        module.setAngle(deadzone(angle, power));
-        module.setThrottle(power);
+        moduleA.setAngle(deadzone(angle, power));
+        moduleA.setThrottle(power);
+        moduleB.setAngle(deadzone(angle, power));
+        moduleB.setThrottle(power);
+        
     }
-
+   //**the wheel will go to the position that is greater than 0.2, otherwise stop power when less than or equal to*/
     public double deadzone(double angle, double power){
-        //If the input given is less than 0.2 the rotation will reset to 0
-        if(power >= -.2) {
-            return 0;
-        } else {    
+        double lastAngle;
+//If the input given is less than 0.2 the rotation will reset to 0
+    if(power >= -15){
+        lastAngle = angle;
+        if(power <= -15) {
+        return lastAngle;
+        } 
+    }
         return angle;
-        //if the input given is greater than 0.2 it will to the joystick degree position
-    }
-    }
+  }
 
     public void angle(double angle, double distance ){
-       module.Angle(angle, distance); 
+       moduleA.Angle(angle, distance); 
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Drive Motor", module.driveMotorEncoder());
-        SmartDashboard.putNumber("Angle Motor", module.angleMotorEncoder());
+        SmartDashboard.putNumber("Drive Motor A", moduleA.driveMotorEncoder());
+        SmartDashboard.putNumber("Angle Motor A", moduleA.angleMotorEncoder());
+        SmartDashboard.putNumber("Drive Motor B", moduleB.driveMotorEncoder());
+        SmartDashboard.putNumber("Angle Motor B", moduleB.angleMotorEncoder());
+
+
         SmartDashboard.putNumber("degrees", RobotContainer.driverJoystick.getDirectionDegrees());
     }
 
