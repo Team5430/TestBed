@@ -1,11 +1,17 @@
 package com.team5430.util;
 
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
 
-public class SwerveModule {
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.util.sendable.SendableRegistry;
+
+public class SwerveModule implements Sendable {
 
     private TalonFX angleMotor;
     private TalonFX driveMotor;
@@ -20,6 +26,8 @@ public class SwerveModule {
         angleMotor = new TalonFX(AngleMotorCANid);
         driveMotor = new TalonFX(DriveMotorCANid);
         motorConfig();
+        SendableRegistry.addChild(this, angleMotor);
+        SendableRegistry.addChild(this, driveMotor);
     }
 
     private void motorConfig(){
@@ -56,6 +64,12 @@ public class SwerveModule {
         driveMotor.setControl(new DutyCycleOut(throttle));
     }
 
+//safe function to fallback to
+    public void StopAll(){
+        setAngle(0);
+        setThrottle(0);
+    }
+
     public void setAngleRatio(double ratio){
         angleRatio = ratio;
         motorConfig();
@@ -72,13 +86,15 @@ public class SwerveModule {
         motorConfig();
     }
 
-    public double driveMotorEncoder(){
-       return driveMotor.getRotorPosition().getValueAsDouble();
+    public DoubleSupplier driveMotorEncoder(){
+       return () -> driveMotor.getRotorPosition().getValueAsDouble();
     }
 
-    public double angleMotorEncoder(){
-        return angleMotor.getRotorPosition().getValueAsDouble();
+    public DoubleSupplier angleMotorEncoder(){
+        return () -> angleMotor.getRotorPosition().getValueAsDouble();
+        
     }
+
     //Calculations to find the rotations needed to travel a given distance
 
     public void Angle(double angle, double distance){
@@ -88,6 +104,15 @@ public class SwerveModule {
         driveMotor.setPosition(0);   
         driveMotor.setControl(new PositionDutyCycle(rotations));
 
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.setSmartDashboardType("Swerve Module");
+        builder.setActuator(true);
+        builder.setSafeState(this::StopAll);
+        builder.addDoubleProperty("Angle Encoder", angleMotorEncoder() , null );
+        builder.addDoubleProperty("Drive Encoder", driveMotorEncoder(), null);
     }
 
 }

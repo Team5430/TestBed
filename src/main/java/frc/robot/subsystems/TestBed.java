@@ -1,7 +1,10 @@
 package frc.robot.subsystems;
 
+import com.kauailabs.navx.frc.AHRS;
 import com.team5430.util.SwerveModule;
 
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
@@ -15,6 +18,11 @@ public class TestBed extends SubsystemBase{
    
     SwerveModule moduleA = new SwerveModule(0, 1);
     SwerveModule moduleB = new SwerveModule(6,7);
+
+    SendableBuilder sendableBuilder;
+
+    AHRS gyro = new AHRS(SPI.Port.kMXP);
+
     public void motorConfig(){
         moduleA.SetGains(kP, kP);
     }
@@ -24,8 +32,9 @@ public class TestBed extends SubsystemBase{
         moduleA.setThrottle(power);
         moduleB.setAngle(deadzone(angle, power));
         moduleB.setThrottle(power);
-        
     }
+
+    
    //**the wheel will go to the position that is greater than 0.2, otherwise stop power when less than or equal to*/
     public double deadzone(double angle, double power){
         double lastAngle;
@@ -45,11 +54,8 @@ public class TestBed extends SubsystemBase{
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Drive Motor A", moduleA.driveMotorEncoder());
-        SmartDashboard.putNumber("Angle Motor A", moduleA.angleMotorEncoder());
-        SmartDashboard.putNumber("Drive Motor B", moduleB.driveMotorEncoder());
-        SmartDashboard.putNumber("Angle Motor B", moduleB.angleMotorEncoder());
-
+        moduleA.initSendable(sendableBuilder);
+        moduleB.initSendable(sendableBuilder);
 
         SmartDashboard.putNumber("degrees", RobotContainer.driverJoystick.getDirectionDegrees());
     }

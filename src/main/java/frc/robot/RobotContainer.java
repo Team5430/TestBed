@@ -14,7 +14,7 @@ public class RobotContainer {
 
 //init subsystem
   private TestBed m_TestBed = new TestBed();
-//init new joystick on usb port 0
+//init new joystick on usb port 0; can be interchanged for any wired controller on Port 0
   public static CommandJoystick driverJoystick = new CommandJoystick(0);
   
 
