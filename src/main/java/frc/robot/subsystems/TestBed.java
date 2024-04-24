@@ -24,7 +24,9 @@ public class TestBed extends SubsystemBase{
     AHRS gyro = new AHRS(SPI.Port.kMXP);
 
     public void motorConfig(){
-        moduleA.SetGains(kP, kP);
+//init data sending
+        moduleA.initSendable(sendableBuilder);
+        moduleB.initSendable(sendableBuilder);
     }
         //setAngle will set the directional angle
     public void drive(double angle, double power){
@@ -54,9 +56,8 @@ public class TestBed extends SubsystemBase{
 
     @Override
     public void periodic() {
-        moduleA.initSendable(sendableBuilder);
-        moduleB.initSendable(sendableBuilder);
-
+    //update data
+        sendableBuilder.update();
         SmartDashboard.putNumber("degrees", RobotContainer.driverJoystick.getDirectionDegrees());
     }
 
