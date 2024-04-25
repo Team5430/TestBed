@@ -50,8 +50,8 @@ public class TestBed extends SubsystemBase{
 
     @Override
     public void periodic() {
-        SmartDashboard.putData(moduleA);
-        SmartDashboard.putData(moduleB);
+        SmartDashboard.putData("module a", moduleA);
+        SmartDashboard.putData("Module B", moduleB);
         SmartDashboard.putNumber("degrees", RobotContainer.driverJoystick.getDirectionDegrees());
     }
 
