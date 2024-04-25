@@ -21,6 +21,7 @@ public class SwerveModule implements Sendable {
 
     private double angle_kP = 0.6;
     private double drive_kP = .15;
+    private double appliedPower;
 
     public SwerveModule(int AngleMotorCANid, int DriveMotorCANid){
         angleMotor = new TalonFX(AngleMotorCANid);
@@ -28,6 +29,7 @@ public class SwerveModule implements Sendable {
         motorConfig();
         SendableRegistry.addChild(this, angleMotor);
         SendableRegistry.addChild(this, driveMotor);
+        SendableRegistry.addLW(this, "Swerve Module");
     }
 
     private void motorConfig(){
@@ -62,12 +64,12 @@ public class SwerveModule implements Sendable {
 //power to motor that moves the wheel
     public void setThrottle(double throttle){
         driveMotor.setControl(new DutyCycleOut(throttle));
+        appliedPower = throttle;
     }
-
-//safe function to fallback to
-    public void StopAll(){
-        setAngle(0);
-        setThrottle(0);
+    
+//getters and setters
+    public double getThrottle(){
+        return appliedPower;
     }
 
     public void setAngleRatio(double ratio){
@@ -80,10 +82,36 @@ public class SwerveModule implements Sendable {
         motorConfig();
     }
 
-    public void SetGains(double AngleMotorkP, double DriveMotorkP){
-        angle_kP = AngleMotorkP;
-        drive_kP = DriveMotorkP;
+    public void setDrivekP(double kP){
+         drive_kP = kP;
+         motorConfig();
+    }
+
+    public double getDrivekP(){
+        return drive_kP;
+    }
+
+    public void setAnglekP(double kP){
+        angle_kP = kP;
         motorConfig();
+    }
+
+    public double getAnglekP(){
+        return angle_kP;
+    }
+
+    public void SetDriveEncoder(double value){
+        driveMotor.setPosition(value);
+    }
+
+    public void SetAngleEncoder(double value){
+        angleMotor.setPosition(value);
+    }
+
+    //safe function to fallback to
+    public void StopAll(){
+        setAngle(0);
+        setThrottle(0);
     }
 
     public DoubleSupplier driveMotorEncoder(){
@@ -92,11 +120,9 @@ public class SwerveModule implements Sendable {
 
     public DoubleSupplier angleMotorEncoder(){
         return () -> angleMotor.getRotorPosition().getValueAsDouble();
-        
     }
 
-    //Calculations to find the rotations needed to travel a given distance
-
+//Calculations to find the rotations needed to travel a given distance
     public void Angle(double angle, double distance){
         setAngle(angle);
         double circumfrence = 3.75 * Math.PI;
@@ -108,11 +134,16 @@ public class SwerveModule implements Sendable {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.setSmartDashboardType("Swerve Module");
+        builder.setSmartDashboardType("Swerve Module Telemetry");
         builder.setActuator(true);
         builder.setSafeState(this::StopAll);
-        builder.addDoubleProperty("Angle Encoder", angleMotorEncoder() , null );
-        builder.addDoubleProperty("Drive Encoder", driveMotorEncoder(), null);
+        builder.addDoubleProperty("Angle Encoder", angleMotorEncoder(), this::SetAngleEncoder);
+        builder.addDoubleProperty("Drive Encoder", driveMotorEncoder(), this::SetDriveEncoder);
+        builder.addDoubleProperty("Angle Motor kP", this::getAnglekP, this::setAnglekP);
+        builder.addDoubleProperty("Drive Motor kP",this::getDrivekP, this::setDrivekP);
+        builder.addDoubleProperty("Drive Motor Power", this::getThrottle , this::setThrottle);
+
     }
+
 
 }

@@ -60,6 +60,10 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().cancelAll();
   }
 
+  @Override 
+  public void simulationInit() {
+      m_TestBed.motorConfig();
+  }
   @Override
   public void testPeriodic() {}
 
