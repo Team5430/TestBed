@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import com.kauailabs.navx.frc.AHRS;
 import com.team5430.util.SwerveModule;
 
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -14,19 +13,14 @@ public class TestBed extends SubsystemBase{
     public TestBed(){}
 
 //constants
-    private double kP = .3;
    
     SwerveModule moduleA = new SwerveModule(0, 1);
     SwerveModule moduleB = new SwerveModule(6,7);
 
-    SendableBuilder sendableBuilder;
-
     AHRS gyro = new AHRS(SPI.Port.kMXP);
 
     public void motorConfig(){
-//init data sending
-        moduleA.initSendable(sendableBuilder);
-        moduleB.initSendable(sendableBuilder);
+
     }
         //setAngle will set the directional angle
     public void drive(double angle, double power){
@@ -56,8 +50,8 @@ public class TestBed extends SubsystemBase{
 
     @Override
     public void periodic() {
-    //update data
-        sendableBuilder.update();
+        SmartDashboard.putNumber("angle Encoder A", moduleA.angleMotorEncoder().getAsDouble());
+        SmartDashboard.putNumber("angle Encoder B", moduleB.angleMotorEncoder().getAsDouble());
         SmartDashboard.putNumber("degrees", RobotContainer.driverJoystick.getDirectionDegrees());
     }
 
