@@ -35,7 +35,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-   // m_TestBed.angle(90, 30);
+    // m_TestBed.angle(90, 30);
   }
 
   @Override
@@ -45,9 +45,7 @@ public class Robot extends TimedRobot {
   public void autonomousExit() {}
 
   @Override
-  public void teleopInit() {
- 
-  }
+  public void teleopInit() {}
 
   @Override
   public void teleopPeriodic() {}
@@ -60,10 +58,11 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().cancelAll();
   }
 
-  @Override 
+  @Override
   public void simulationInit() {
-      m_TestBed.motorConfig();
+    m_TestBed.motorConfig();
   }
+
   @Override
   public void testPeriodic() {}
 

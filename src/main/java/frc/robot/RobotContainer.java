@@ -12,32 +12,28 @@ import frc.robot.subsystems.TestBed;
 
 public class RobotContainer {
 
-//init subsystem
+  // init subsystem
   private TestBed m_TestBed = new TestBed();
-//init new joystick on usb port 0; can be interchanged for any wired controller on Port 0
+  // init new joystick on usb port 0; can be interchanged for any wired controller on Port 0
   public static CommandJoystick driverJoystick = new CommandJoystick(0);
-  
 
   public RobotContainer() {
-  //apply set bindings
+    // apply set bindings
     configureBindings();
 
-
-
-  //set default command for driver control
+    // set default command for driver control
     m_TestBed.setDefaultCommand(
-      new RunCommand( () -> m_TestBed.drive(driverJoystick.getDirectionDegrees(),
-       driverJoystick.getMagnitude() * -.5),
-       m_TestBed));
-      }
+        new RunCommand(
+            () ->
+                m_TestBed.drive(
+                    driverJoystick.getDirectionDegrees(), driverJoystick.getMagnitude() * -.5),
+            m_TestBed));
+  }
 
-
-  //contorller bindings here
+  // contorller bindings here
   private void configureBindings() {}
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
   }
-
-  
 }
