@@ -26,7 +26,10 @@ public class RobotContainer {
         new RunCommand(
             () ->
                 m_TestBed.drive(
-                    driverJoystick.getDirectionDegrees(), driverJoystick.getMagnitude() * -.5),
+                    driverJoystick.getDirectionDegrees(),
+                     driverJoystick.getMagnitude() * -.5,
+                      driverJoystick.getZ(),
+                       m_TestBed.gyro.getAngle()),
             m_TestBed));
   }
 

@@ -1,5 +1,7 @@
 package com.team5430.util;
 
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
@@ -82,9 +84,54 @@ public class SwerveModule implements Sendable {
     drive_kP = DriveMotorkP;
   }
 
+  public void StopAll(){
+    setAngle(0);
+    setThrottle(0);
+  }
+
+  public DoubleSupplier angleMotorEncoder = () -> angleMotor.getRotorPosition().getValue();
+
+  public DoubleSupplier driveMotorEncoder = () -> driveMotor.getRotorPosition().getValue();
+
+ public void SetAngleEncoder(double set){
+    setAngle(set);
+ }
+
+  public double driveMotorEncoder(){
+    return driveMotor.getRotorPosition().getValueAsDouble();
+  }
+
+  public void SetDriveEncoder(double input){
+    driveMotor.setControl(new PositionDutyCycle(input));
+  }
+
+  public double getAnglekP() {
+      return angle_kP;
+  }
+
+  public void setAnglekP(double kP){
+    angle_kP = kP;
+  }
+
+  public double getDrivekP() {
+    return drive_kP;
+  }
+
+  public void setDrivekP(double kP){ 
+    drive_kP = kP;
+  }
+
+
   @Override
   public void initSendable(SendableBuilder builder) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'initSendable'");
+   builder.setSmartDashboardType("Swerve Module Telemetry");
+        builder.setActuator(true);
+        builder.setSafeState(this::StopAll);
+        builder.addDoubleProperty("Angle Encoder", angleMotorEncoder, this::SetAngleEncoder);
+        builder.addDoubleProperty("Drive Encoder", driveMotorEncoder, this::SetDriveEncoder);
+        builder.addDoubleProperty("Angle Motor kP", this::getAnglekP, this::setAnglekP);
+        builder.addDoubleProperty("Drive Motor kP",this::getDrivekP, this::setDrivekP);
+        builder.addDoubleProperty("Drive Motor Power", this::getThrottle , this::setThrottle);
+
   }
 }
