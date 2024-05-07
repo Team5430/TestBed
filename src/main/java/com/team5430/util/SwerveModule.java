@@ -18,7 +18,7 @@ public class SwerveModule implements Sendable {
   private double angleRatio = 21.42857;
   private double driveRatio = 8.14;
 
-  private double angle_kP = 0.6;
+  private double angle_kP = 0.15;
   private double drive_kP = .15;
   private double appliedPower;
 

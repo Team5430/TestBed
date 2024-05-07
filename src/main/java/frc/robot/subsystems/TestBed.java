@@ -24,8 +24,8 @@ public class TestBed extends SubsystemBase {
   SwerveModule moduleA = new SwerveModule(0, 1);
   SwerveModule moduleB = new SwerveModule(6, 7);
 
+  public double lastAngle = 0;
  
-
   public void motorConfig() {
     SmartDashboard.putData("module A", moduleA);
     SmartDashboard.putData("Module B", moduleB);
@@ -40,20 +40,23 @@ public class TestBed extends SubsystemBase {
   // **the wheel will go to the position that is greater than 0.2, otherwise stop power when less
   // than or equal to*/
   public double deadzone(double angle, double power) {
-    double lastAngle;
-    // If the input given is less than 0.2 the rotation will reset to 0
-    if (power >= -15) {
+    // If the input given is less than 0.3 the rotation will reset to 0
+    if (power < -0.3) {
       lastAngle = angle;
-      if (power <= -15) {
-        return lastAngle;
+    if (power > -0.3) {
+        return angle;
       }
     }
-    return angle;
+    return lastAngle;
   }
 
   @Override
   public void periodic() {
+    
     SmartDashboard.updateValues();
     SmartDashboard.putNumber("degrees", RobotContainer.driverJoystick.getDirectionDegrees());
+    SmartDashboard.putNumber("degrees-ModuleA", moduleA.getAnglekP());
+    SmartDashboard.putNumber("degrees-ModuleB", moduleB.getAnglekP());
+    SmartDashboard.putNumber("magnitude", RobotContainer.driverJoystick.getMagnitude());
   }
 }

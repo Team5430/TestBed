@@ -14,7 +14,6 @@ public class SwerveModuleGroup {
   private SwerveModule m_D;
   private DoubleSupplier gyroscope;
   private double currentAngle;
-  private double angleInput = 1 / 360;
 
   public SwerveModuleGroup(SwerveModule A, SwerveModule B, SwerveModule C, SwerveModule D) {
     m_A = A;
@@ -75,26 +74,24 @@ public class SwerveModuleGroup {
   }
 
   public void Drive(double wantedAngle, double throttle, double thirdAxis, double Robotangle) {
+
     // if turning within range of deadzone;
     
-    currentAngle = Robotangle; 
-
     if (thirdAxis > .3 || thirdAxis < -.3) {
       // used to drive while turning
       double power = MathUtil.applyDeadband(thirdAxis, .3) + throttle;
 
       // adjust as needed; used to change Robotangle
-      m_A.setThrottle(power);
-      m_B.setThrottle(power);
+      m_A.setThrottle(power/2);
+      m_B.setThrottle(power/2);
     
 
-      double headingAngle = currentAngle - Robotangle;
 
-      setAngle(headingAngle);
+      setAngle(Robotangle - currentAngle);
     } else {
       // when not turning
       setAngle(wantedAngle);
-      setThrottle(throttle);
+      setThrottle(throttle );
     }
   
   }
