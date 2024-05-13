@@ -13,12 +13,12 @@ public class CustomXboxController extends XboxController {
     }
 
     public double getLeftStickDirrectionDegrees(){
-        double conversion =  Math.atan2(this.getLeftX(), -getLeftY());;
+        double conversion =  Math.toDegrees(Math.atan2(this.getLeftX(), -getLeftY()));
             return conversion;
     }
     
     public double getRightStickDirrectionDegrees(){
-        double conversion =  Math.atan2(this.getRightX(), -getRightY());;
+        double conversion =  Math.toDegrees(Math.atan2(this.getRightX(), -getRightY()));
            return conversion;
     }
     
