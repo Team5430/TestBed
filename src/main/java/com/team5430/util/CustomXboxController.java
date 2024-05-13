@@ -4,21 +4,6 @@ import edu.wpi.first.wpilibj.XboxController;
 
 public class CustomXboxController extends XboxController {
 
-    public enum Axis {
-        X, Y
-    }
-
-    public enum Button {
-        A(1), B(2), X(3), Y(4), LB(5), RB(6), BACK(7), START(8), L_JOYSTICK(9), R_JOYSTICK(10);
-
-        public int id;
-
-        Button(int ID) {
-            this.id = ID;
-        }
-
-    }
-
     public CustomXboxController(int port) {
         super(port);
     }    
