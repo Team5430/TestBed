@@ -33,7 +33,7 @@ public class SwerveModuleGroup {
     m_B = B;
   }
 
-  public void SwerveModuleType() {}
+  public void SwervteGroupType() {}
 
   public void setAngle(double input) {
     m_A.setAngle(input);
@@ -45,24 +45,6 @@ public class SwerveModuleGroup {
     m_A.setThrottle(throttle);
     m_B.setThrottle(throttle);
  
-  }
-
-  public void setAngleRatio(double ratio) {
-    m_A.setAngleRatio(ratio);
-    m_B.setAngleRatio(ratio);
- 
-  }
-
-  public void setDriveRatio(double ratio) {
-    m_A.setDriveRatio(ratio);
-    m_B.setDriveRatio(ratio);
-   
-  }
-
-  public void SetGains(double AngleMotorkP, double DriveMotorkP) {
-    m_A.SetGains(AngleMotorkP, DriveMotorkP);
-    m_B.SetGains(AngleMotorkP, DriveMotorkP);
-
   }
 
   public void setGyro(DoubleSupplier GyroscopeAngle) {
@@ -91,9 +73,8 @@ public class SwerveModuleGroup {
     } else {
       // when not turning
       setAngle(wantedAngle);
-      setThrottle(throttle );
+      setThrottle(throttle);
     }
   
   }
-
 }

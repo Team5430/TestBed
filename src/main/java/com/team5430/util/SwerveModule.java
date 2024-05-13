@@ -6,6 +6,8 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.team5430.util.configs.SwerveConfig;
+
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
@@ -15,35 +17,35 @@ public class SwerveModule implements Sendable {
   private TalonFX angleMotor;
   private TalonFX driveMotor;
   private double Angle = 360;
-  private double angleRatio = 21.42857;
-  private double driveRatio = 8.14;
-
   private double angle_kP = 0.15;
   private double drive_kP = .15;
   private double appliedPower;
 
-  public SwerveModule(int AngleMotorCANid, int DriveMotorCANid) {
+  public SwerveModule(int AngleMotorCANid, int DriveMotorCANid, SwerveConfig config) {
     angleMotor = new TalonFX(AngleMotorCANid);
     driveMotor = new TalonFX(DriveMotorCANid);
-    motorConfig();
+    motorConfig(config);
     SendableRegistry.addChild(this, angleMotor);
     SendableRegistry.addChild(this, driveMotor);
     SendableRegistry.addLW(this, "Swerve Module");
   }
 
-  private void motorConfig() {
+  private void motorConfig(SwerveConfig config) {
+
     // create config objects
     TalonFXConfiguration angleConfig = new TalonFXConfiguration();
     TalonFXConfiguration driveConfig = new TalonFXConfiguration();
 
     // goes towards closest value that is equivalent to setpoint
     angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
+
     // gear ratio
-    angleConfig.Feedback.SensorToMechanismRatio = angleRatio;
+    angleConfig.Feedback.SensorToMechanismRatio = config.PhysicalProperties.AngularGearRatio;
+    driveConfig.Feedback.SensorToMechanismRatio = config.PhysicalProperties.DriveGearRatio;
+
     // proportional gains
-    angleConfig.Slot0.kP = angle_kP;
-    driveConfig.Slot0.kP = drive_kP;
-    driveConfig.Feedback.SensorToMechanismRatio = driveRatio;
+    angleConfig.Slot0.kP = config.Software.Angular_kP;
+    driveConfig.Slot0.kP = config.Software.Drive_kP;
 
     // apply configurations
     angleMotor.getConfigurator().apply(angleConfig);
@@ -70,28 +72,15 @@ public class SwerveModule implements Sendable {
     return appliedPower;
   }
 
-  public void setAngleRatio(double ratio) {
-    angleRatio = ratio;
-    motorConfig();
-  }
-
-  public void setDriveRatio(double ratio) {
-    driveRatio = ratio;
-  }
-
-  public void SetGains(double AngleMotorkP, double DriveMotorkP) {
-    angle_kP = AngleMotorkP;
-    drive_kP = DriveMotorkP;
-  }
-
   public void StopAll(){
     setAngle(0);
     setThrottle(0);
   }
 
-  public DoubleSupplier angleMotorEncoder = () -> angleMotor.getRotorPosition().getValue();
-
-  public DoubleSupplier driveMotorEncoder = () -> driveMotor.getRotorPosition().getValue();
+//getters and setters
+  public double angleMotorEncoder(){
+    return angleMotor.getRotorPosition().getValueAsDouble();
+  }
 
  public void SetAngleEncoder(double set){
     setAngle(set);
@@ -105,7 +94,7 @@ public class SwerveModule implements Sendable {
     driveMotor.setControl(new PositionDutyCycle(input));
   }
 
-  public double getAnglekP() {
+  public double getAnglekP(){
       return angle_kP;
   }
 
@@ -113,7 +102,7 @@ public class SwerveModule implements Sendable {
     angle_kP = kP;
   }
 
-  public double getDrivekP() {
+  public double getDrivekP(){
     return drive_kP;
   }
 
@@ -127,8 +116,8 @@ public class SwerveModule implements Sendable {
    builder.setSmartDashboardType("Swerve Module Telemetry");
         builder.setActuator(true);
         builder.setSafeState(this::StopAll);
-        builder.addDoubleProperty("Angle Encoder", angleMotorEncoder, this::SetAngleEncoder);
-        builder.addDoubleProperty("Drive Encoder", driveMotorEncoder, this::SetDriveEncoder);
+        builder.addDoubleProperty("Angle Encoder", this::angleMotorEncoder, this::SetAngleEncoder);
+        builder.addDoubleProperty("Drive Encoder", this::driveMotorEncoder, this::SetDriveEncoder);
         builder.addDoubleProperty("Angle Motor kP", this::getAnglekP, this::setAnglekP);
         builder.addDoubleProperty("Drive Motor kP",this::getDrivekP, this::setDrivekP);
         builder.addDoubleProperty("Drive Motor Power", this::getThrottle , this::setThrottle);

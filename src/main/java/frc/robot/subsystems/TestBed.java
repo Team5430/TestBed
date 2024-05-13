@@ -1,12 +1,15 @@
 package frc.robot.subsystems;
 
 import com.kauailabs.navx.frc.AHRS;
+import com.team5430.util.CollisionDetection;
 import com.team5430.util.SwerveModule;
 import com.team5430.util.SwerveModuleGroup;
+import com.team5430.util.configs.SwerveConfig;
 
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.RobotContainer;
 
 public class TestBed extends SubsystemBase {
@@ -18,17 +21,14 @@ public class TestBed extends SubsystemBase {
   public AHRS gyro = new AHRS(Port.kMXP);
 
   SwerveModuleGroup DriveTrain = new SwerveModuleGroup(
-  new SwerveModule(0, 1),
-  new SwerveModule(6, 7));
-
-  SwerveModule moduleA = new SwerveModule(0, 1);
-  SwerveModule moduleB = new SwerveModule(6, 7);
+  new SwerveModule(0, 1, new SwerveConfig()),
+  new SwerveModule(6, 7, new SwerveConfig()));
 
   public double lastAngle = 0;
- 
+
+  public CollisionDetection mfeedback = new CollisionDetection(gyro);
+
   public void motorConfig() {
-    SmartDashboard.putData("module A", moduleA);
-    SmartDashboard.putData("Module B", moduleB);
     SmartDashboard.putData("Gyroscope", gyro);
   }
 
@@ -54,9 +54,7 @@ public class TestBed extends SubsystemBase {
   public void periodic() {
     
     SmartDashboard.updateValues();
-    SmartDashboard.putNumber("degrees", RobotContainer.driverJoystick.getDirectionDegrees());
-    SmartDashboard.putNumber("degrees-ModuleA", moduleA.getAnglekP());
-    SmartDashboard.putNumber("degrees-ModuleB", moduleB.getAnglekP());
-    SmartDashboard.putNumber("magnitude", RobotContainer.driverJoystick.getMagnitude());
+    SmartDashboard.putNumber("Degrees", RobotContainer.driverJoystick.getLeftStickDirrectionDegrees());
+
   }
 }
