@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import com.kauailabs.navx.frc.AHRS;
 import com.team5430.util.SwerveModule;
 import com.team5430.util.SwerveModuleGroup;
-
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -17,18 +16,21 @@ public class TestBed extends SubsystemBase {
 
   public AHRS gyro = new AHRS(Port.kMXP);
 
-  SwerveModuleGroup DriveTrain = new SwerveModuleGroup(
-  new SwerveModule(0, 1),
-  new SwerveModule(6, 7));
+  //swerve CANids; 0 through 7, even being drive motor, and odd being angle motor, following alphabetically,
+  //Module A -> Module B -> Module C
+  SwerveModuleGroup DriveTrain =
+      new SwerveModuleGroup(
+        new SwerveModule(0, 1),
+        new SwerveModule(2, 3),
+        new SwerveModule(4, 5),
+        new SwerveModule(6, 7)
+        );
 
-  SwerveModule moduleA = new SwerveModule(0, 1);
-  SwerveModule moduleB = new SwerveModule(6, 7);
 
   public double lastAngle = 0;
- 
+
   public void motorConfig() {
-    SmartDashboard.putData("module A", moduleA);
-    SmartDashboard.putData("Module B", moduleB);
+    SmartDashboard.putData("DriveTrain", DriveTrain);
     SmartDashboard.putData("Gyroscope", gyro);
   }
 
@@ -43,7 +45,7 @@ public class TestBed extends SubsystemBase {
     // If the input given is less than 0.3 the rotation will reset to 0
     if (power < -0.3) {
       lastAngle = angle;
-    if (power > -0.3) {
+      if (power > -0.3) {
         return angle;
       }
     }
@@ -52,11 +54,9 @@ public class TestBed extends SubsystemBase {
 
   @Override
   public void periodic() {
-    
+
     SmartDashboard.updateValues();
     SmartDashboard.putNumber("degrees", RobotContainer.driverJoystick.getDirectionDegrees());
-    SmartDashboard.putNumber("degrees-ModuleA", moduleA.getAnglekP());
-    SmartDashboard.putNumber("degrees-ModuleB", moduleB.getAnglekP());
     SmartDashboard.putNumber("magnitude", RobotContainer.driverJoystick.getMagnitude());
   }
 }
