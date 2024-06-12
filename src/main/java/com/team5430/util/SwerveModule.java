@@ -17,11 +17,11 @@ public class SwerveModule implements Sendable {
   private double angleRatio = 21.42857;
   private double driveRatio = 8.14;
 
-  private double angle_kP = 0.15;
+  private double angle_kP = 0.65;
   private double drive_kP = .15;
   private double appliedPower;
 
-  public SwerveModule(int DriveMotorCANid, int AngleMotorCANid) {
+  public SwerveModule(int AngleMotorCANid, int DriveMotorCANid) {
     angleMotor = new TalonFX(AngleMotorCANid);
     driveMotor = new TalonFX(DriveMotorCANid);
     motorConfig();

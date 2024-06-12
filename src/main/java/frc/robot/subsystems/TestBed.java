@@ -45,18 +45,19 @@ public class TestBed extends SubsystemBase {
     // If the input given is less than 0.3 the rotation will reset to 0
     if (power < -0.3) {
       lastAngle = angle;
-      if (power > -0.3) {
+    if (power > -0.3) {
         return angle;
       }
     }
     return lastAngle;
   }
 
+
   @Override
   public void periodic() {
 
     SmartDashboard.updateValues();
-    SmartDashboard.putNumber("degrees", RobotContainer.driverJoystick.getDirectionDegrees());
-    SmartDashboard.putNumber("magnitude", RobotContainer.driverJoystick.getMagnitude());
+    SmartDashboard.putNumber("degrees", RobotContainer.driverJoystick.getLeftStickDirrectionDegrees());
+    SmartDashboard.putNumber("magnitude", RobotContainer.driverJoystick.getLeftMagnitude());
   }
 }

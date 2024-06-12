@@ -77,14 +77,18 @@ public class SwerveModuleGroup implements Sendable {
       double power = MathUtil.applyDeadband(thirdAxis, .3) + throttle;
 
       // adjust as needed; used to change Robotangle
-      setThrottle(power / 2);
+      m_A.setThrottle(power / 2);
+      m_B.setThrottle(power / 2);
+      m_C.setThrottle(power / 2);
+      m_D.setThrottle(power / 2);
 
       setAngle(Robotangle - currentAngle);
     } else {
       // when not turning
       setAngle(wantedAngle);
-      setThrottle(throttle);
+      setThrottle(throttle/5);
     }
+  
   }
 
   @Override
