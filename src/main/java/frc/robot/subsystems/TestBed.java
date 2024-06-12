@@ -20,17 +20,17 @@ public class TestBed extends SubsystemBase {
   //Module A -> Module B -> Module C
   SwerveModuleGroup DriveTrain =
       new SwerveModuleGroup(
-        new SwerveModule(0, 1),
-        new SwerveModule(2, 3),
-        new SwerveModule(4, 5),
-        new SwerveModule(6, 7)
+        new SwerveModule(0, 1, "Module A"),
+        new SwerveModule(2, 3, "Module B"),
+        new SwerveModule(4, 5, "Module C"),
+        new SwerveModule(6, 7, "Module D")
         );
 
 
   public double lastAngle = 0;
 
   public void motorConfig() {
-    SmartDashboard.putData("DriveTrain", DriveTrain);
+    SmartDashboard.putData("Swerve Chassis", DriveTrain);
     SmartDashboard.putData("Gyroscope", gyro);
   }
 

@@ -21,6 +21,7 @@ public class RobotContainer {
   public static CustomXboxController driverJoystick = new CustomXboxController(0);
 
   public RobotContainer() {
+    m_TestBed.motorConfig();
     // apply set bindings
     configureBindings();
     // set default command for driver control
@@ -33,6 +34,8 @@ public class RobotContainer {
                       driverJoystick.getRightX(),
                        m_TestBed.gyro.getAngle()),
             m_TestBed));
+
+      
   }
 
   // contorller bindings here

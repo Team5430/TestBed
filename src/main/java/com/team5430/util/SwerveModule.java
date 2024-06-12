@@ -13,17 +13,21 @@ public class SwerveModule implements Sendable {
 
   private TalonFX angleMotor;
   private TalonFX driveMotor;
+  private String moduleName;
+
   private double Angle = 360;
   private double angleRatio = 21.42857;
   private double driveRatio = 8.14;
-
+  
   private double angle_kP = 0.65;
   private double drive_kP = .15;
   private double appliedPower;
 
-  public SwerveModule(int AngleMotorCANid, int DriveMotorCANid) {
+  public SwerveModule(int AngleMotorCANid, int DriveMotorCANid, String Name) {
     angleMotor = new TalonFX(AngleMotorCANid);
     driveMotor = new TalonFX(DriveMotorCANid);
+    moduleName = Name;
+
     motorConfig();
     SendableRegistry.addChild(this, angleMotor);
     SendableRegistry.addChild(this, driveMotor);
@@ -92,17 +96,6 @@ public class SwerveModule implements Sendable {
 
   public DoubleSupplier driveMotorEncoder = () -> driveMotor.getRotorPosition().getValue();
 
-  public void SetAngleEncoder(double set) {
-    setAngle(set);
-  }
-
-  public double driveMotorEncoder() {
-    return driveMotor.getRotorPosition().getValueAsDouble();
-  }
-
-  public void SetDriveEncoder(double input) {
-    driveMotor.setControl(new PositionDutyCycle(input));
-  }
 
   public double getAnglekP() {
     return angle_kP;
@@ -125,10 +118,10 @@ public class SwerveModule implements Sendable {
     builder.setSmartDashboardType("Swerve Module Telemetry");
     builder.setActuator(true);
     builder.setSafeState(this::StopAll);
-    builder.addDoubleProperty("Angle Encoder", angleMotorEncoder, this::SetAngleEncoder);
-    builder.addDoubleProperty("Drive Encoder", driveMotorEncoder, this::SetDriveEncoder);
-    builder.addDoubleProperty("Angle Motor kP", this::getAnglekP, this::setAnglekP);
-    builder.addDoubleProperty("Drive Motor kP", this::getDrivekP, this::setDrivekP);
-    builder.addDoubleProperty("Drive Motor Power", this::getThrottle, this::setThrottle);
+    builder.addDoubleProperty("Angle Encoder " + moduleName, angleMotorEncoder, null);
+    builder.addDoubleProperty("Drive Encoder " + moduleName, driveMotorEncoder, null);
+    builder.addDoubleProperty("Angle Motor kP " + moduleName, this::getAnglekP, this::setAnglekP);
+    builder.addDoubleProperty("Drive Motor kP " + moduleName, this::getDrivekP, this::setDrivekP);
+    builder.addDoubleProperty("Drive Motor Power " + moduleName, this::getThrottle, null);
   }
 }
