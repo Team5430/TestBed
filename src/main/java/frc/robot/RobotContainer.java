@@ -5,22 +5,23 @@
 package frc.robot;
 
 import com.team5430.util.CustomXboxController;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.TestBed;
 
 public class RobotContainer {
+
   // init subsystem
   private TestBed m_TestBed = new TestBed();
   // init new joystick on usb port 0; can be interchanged for any wired controller on Port 0
-  public static CustomXboxController driverJoystick = new CustomXboxController(0);
+
+  public static CustomXboxController driverController = new CustomXboxController(0);
 
   public RobotContainer() {
+
     m_TestBed.motorConfig();
     // apply set bindings
     configureBindings();
@@ -29,25 +30,23 @@ public class RobotContainer {
         new RunCommand(
             () ->
                 m_TestBed.drive(
-                    driverJoystick.getLeftStickDirrectionDegrees(),
-                     driverJoystick.getLeftMagnitude() * -.5,
-                      driverJoystick.getRightX(),
-                       m_TestBed.gyro.getAngle()),
+                    driverController.getLeftStickDirrectionDegrees(),
+                    driverController.getLeftMagnitude(),
+                    driverController.getRightX(),
+                    m_TestBed.gyro.getAngle(),
+                    driverController.getRightTriggerAxis()),
             m_TestBed));
-
-      
   }
 
   // contorller bindings here
   private void configureBindings() {
 
-    /*
-    Trigger controllerVibration = new Trigger(m_TestBed.mfeedback::CollisionDetected);
+    // example trigger usage
+    Trigger x = driverController.x();
 
-    controllerVibration.onTrue(new InstantCommand(() -> driverJoystick.setRumble(true)));
-    controllerVibration.onFalse(new InstantCommand(() -> driverJoystick.setRumble(false)));
-  */
-}
+    x.onFalse(new PrintCommand("X was pressed"));
+  }
+
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
   }

@@ -1,19 +1,19 @@
 package com.team5430.util;
 
+import org.ejml.equation.VariableDouble;
+
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
-import java.util.function.DoubleSupplier;
-
-public class SwerveModuleGroup implements Sendable {
+public class SwerveModuleGroup {
 
   private SwerveModule m_A;
   private SwerveModule m_B;
   private SwerveModule m_C;
   private SwerveModule m_D;
-  private DoubleSupplier gyroscope;
-  private double currentAngle;
+  public ShuffleboardTab DataTab = Shuffleboard.getTab("Swerve Chassis");
+  private double lastAngle = 0;
 
   public SwerveModuleGroup(SwerveModule A, SwerveModule B, SwerveModule C, SwerveModule D) {
     m_A = A;
@@ -43,7 +43,6 @@ public class SwerveModuleGroup implements Sendable {
     m_B.setAngleRatio(ratio);
     m_C.setAngleRatio(ratio);
     m_D.setAngleRatio(ratio);
-    
   }
 
   public void setDriveRatio(double ratio) {
@@ -60,15 +59,15 @@ public class SwerveModuleGroup implements Sendable {
     m_D.SetGains(AngleMotorkP, DriveMotorkP);
   }
 
-  public void setGyro(DoubleSupplier GyroscopeAngle) {
-    gyroscope = GyroscopeAngle;
+  public double VariableSpeedDecline(Double input) {
+
+    double breaking = 1 - input;
+    return breaking;
   }
 
-  public void getGyroAngle() {
-    currentAngle = gyroscope.getAsDouble();
-  }
 
-  public void Drive(double wantedAngle, double throttle, double thirdAxis, double Robotangle) {
+  public void Drive(
+      double wantedAngle, double throttle, double thirdAxis, double Robotangle, double breaking) {
 
     // if turning within range of deadzone;
 
@@ -76,28 +75,28 @@ public class SwerveModuleGroup implements Sendable {
       // used to drive while turning
       double power = MathUtil.applyDeadband(thirdAxis, .3) + throttle;
 
-      // adjust as needed; used to change Robotangle
-      m_A.setThrottle(power / 2);
-      m_B.setThrottle(power / 2);
-      m_C.setThrottle(power / 2);
-      m_D.setThrottle(power / 2);
+      // adjust as needed; use to rotate
+      m_A.setThrottle(-power / 2 * VariableSpeedDecline(breaking));
+      m_B.setThrottle(-power / 2 * VariableSpeedDecline(breaking));
+      m_C.setThrottle(power / 2 * VariableSpeedDecline(breaking));
+      m_D.setThrottle(power / 2 * VariableSpeedDecline(breaking));
 
-      setAngle(Robotangle - currentAngle);
+      setAngle(Robotangle);
     } else {
       // when not turning
       setAngle(wantedAngle);
-      setThrottle(throttle/5);
+      setThrottle(MathUtil.applyDeadband(throttle, .2) * .1 *  VariableSpeedDecline(breaking));
     }
-  
   }
 
-  @Override
-  public void initSendable(SendableBuilder builder) {
-    m_A.initSendable(builder);
-    m_B.initSendable(builder);
-    m_C.initSendable(builder);
-    m_D.initSendable(builder);
-  }
+  public void addTab() {
+    // for shuffleboard
+    Shuffleboard.getTab("Swerve Chassis").add(m_A).withSize(2, 3);
 
-  
+    Shuffleboard.getTab("Swerve Chassis").add(m_B).withSize(2, 3);
+
+    Shuffleboard.getTab("Swerve Chassis").add(m_C).withSize(2, 3);
+
+    Shuffleboard.getTab("Swerve Chassis").add(m_D).withSize(2, 3);
+  }
 }

@@ -18,7 +18,7 @@ public class SwerveModule implements Sendable {
   private double Angle = 360;
   private double angleRatio = 21.42857;
   private double driveRatio = 8.14;
-  
+
   private double angle_kP = 0.65;
   private double drive_kP = .15;
   private double appliedPower;
@@ -29,9 +29,7 @@ public class SwerveModule implements Sendable {
     moduleName = Name;
 
     motorConfig();
-    SendableRegistry.addChild(this, angleMotor);
-    SendableRegistry.addChild(this, driveMotor);
-    SendableRegistry.addLW(this, "Swerve Module");
+    SendableRegistry.addLW(this, moduleName);
   }
 
   private void motorConfig() {
@@ -96,7 +94,6 @@ public class SwerveModule implements Sendable {
 
   public DoubleSupplier driveMotorEncoder = () -> driveMotor.getRotorPosition().getValue();
 
-
   public double getAnglekP() {
     return angle_kP;
   }
@@ -113,15 +110,18 @@ public class SwerveModule implements Sendable {
     drive_kP = kP;
   }
 
+  public String getName() {
+    return moduleName;
+  }
+
   @Override
   public void initSendable(SendableBuilder builder) {
-    builder.setSmartDashboardType("Swerve Module Telemetry");
     builder.setActuator(true);
     builder.setSafeState(this::StopAll);
-    builder.addDoubleProperty("Angle Encoder " + moduleName, angleMotorEncoder, null);
-    builder.addDoubleProperty("Drive Encoder " + moduleName, driveMotorEncoder, null);
-    builder.addDoubleProperty("Angle Motor kP " + moduleName, this::getAnglekP, this::setAnglekP);
-    builder.addDoubleProperty("Drive Motor kP " + moduleName, this::getDrivekP, this::setDrivekP);
-    builder.addDoubleProperty("Drive Motor Power " + moduleName, this::getThrottle, null);
+    builder.addDoubleProperty("Angle Encoder", angleMotorEncoder, null);
+    builder.addDoubleProperty("Drive Encoder", driveMotorEncoder, null);
+    builder.addDoubleProperty("Angle Motor kP", this::getAnglekP, this::setAnglekP);
+    builder.addDoubleProperty("Drive Motor kP", this::getDrivekP, this::setDrivekP);
+    builder.addDoubleProperty("Drive Power", this::getThrottle, null);
   }
 }
