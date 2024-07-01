@@ -14,14 +14,12 @@ public class CustomXboxController extends CommandXboxController {
     this.getHID().setRumble(RumbleType.kBothRumble, on ? 1 : 0);
   }
 
-  public double getLeftStickDirrectionDegrees() {
-    double conversion = Math.toDegrees(Math.atan2(this.getLeftX(), -getLeftY()));
-    return conversion;
+  public double getLeftStickDirectionDegrees() {
+    return Math.toDegrees(Math.atan2(this.getLeftX(), -getLeftY()));
   }
 
-  public double getRightStickDirrectionDegrees() {
-    double conversion = Math.toDegrees(Math.atan2(this.getRightX(), -getRightY()));
-    return conversion;
+  public double getRightStickDirectionDegrees() {
+    return Math.toDegrees(Math.atan2(this.getRightX(), -getRightY()));
   }
 
   public double getLeftMagnitude() {

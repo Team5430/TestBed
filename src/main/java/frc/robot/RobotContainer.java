@@ -15,7 +15,7 @@ import frc.robot.subsystems.TestBed;
 public class RobotContainer {
 
   // init subsystem
-  private TestBed m_TestBed = new TestBed();
+  private final TestBed m_TestBed = new TestBed();
   // init new joystick on usb port 0; can be interchanged for any wired controller on Port 0
 
   public static CustomXboxController driverController = new CustomXboxController(0);
@@ -30,7 +30,7 @@ public class RobotContainer {
         new RunCommand(
             () ->
                 m_TestBed.drive(
-                    driverController.getLeftStickDirrectionDegrees(),
+                    driverController.getLeftStickDirectionDegrees(),
                     driverController.getLeftMagnitude(),
                     driverController.getRightX(),
                     m_TestBed.gyro.getAngle(),
@@ -38,7 +38,7 @@ public class RobotContainer {
             m_TestBed));
   }
 
-  // contorller bindings here
+  // controller bindings here
   private void configureBindings() {
 
     // example trigger usage

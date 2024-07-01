@@ -3,7 +3,9 @@ package com.team5430.util;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
@@ -13,12 +15,11 @@ public class SwerveModule implements Sendable {
 
   private TalonFX angleMotor;
   private TalonFX driveMotor;
-  private String moduleName;
+  private CANcoder magEncoder;
+  private final String moduleName;
 
-  private double Angle = 360;
   private double angleRatio = 21.42857;
   private double driveRatio = 8.14;
-
   private double angle_kP = 0.65;
   private double drive_kP = .15;
   private double appliedPower;
@@ -26,6 +27,8 @@ public class SwerveModule implements Sendable {
   public SwerveModule(int AngleMotorCANid, int DriveMotorCANid, String Name) {
     angleMotor = new TalonFX(AngleMotorCANid);
     driveMotor = new TalonFX(DriveMotorCANid);
+    magEncoder = new CANcoder(DriveMotorCANid + 1);
+
     moduleName = Name;
 
     motorConfig();
@@ -36,11 +39,14 @@ public class SwerveModule implements Sendable {
     // create config objects
     TalonFXConfiguration angleConfig = new TalonFXConfiguration();
     TalonFXConfiguration driveConfig = new TalonFXConfiguration();
-
-    // goes towards closest value that is equivalent to setpoint
+    // goes towards closest value that is equivalent to wanted
     angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
-    // gear ratio
-    angleConfig.Feedback.SensorToMechanismRatio = angleRatio;
+    // Cancoder config
+    angleConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+    angleConfig.Feedback.SensorToMechanismRatio = 1;
+    angleConfig.Feedback.FeedbackRemoteSensorID = magEncoder.getDeviceID();
+    // used when there is not abs encoder
+    // angleConfig.Feedback.SensorToMechanismRatio = angleRatio;
     // proportional gains
     angleConfig.Slot0.kP = angle_kP;
     driveConfig.Slot0.kP = drive_kP;
@@ -57,10 +63,11 @@ public class SwerveModule implements Sendable {
 
   // any degree value will be turned into rotational value
   public void setAngle(double input) {
-    angleMotor.setControl(new PositionDutyCycle(input / Angle));
+    angleMotor.setControl(new PositionDutyCycle(input / 360));
   }
 
-  // power to motor that moves the wheel
+  // TODO Switch to velocity; translate anything based on power as well
+  // percentage targeted to power motor
   public void setThrottle(double throttle) {
     driveMotor.setControl(new DutyCycleOut(throttle));
     appliedPower = throttle;
@@ -94,6 +101,10 @@ public class SwerveModule implements Sendable {
 
   public DoubleSupplier driveMotorEncoder = () -> driveMotor.getRotorPosition().getValue();
 
+  public DoubleSupplier AbsoluteReading = () -> magEncoder.getAbsolutePosition().getValue();
+
+  public DoubleSupplier PositionReading = () -> magEncoder.getPosition().getValue();
+
   public double getAnglekP() {
     return angle_kP;
   }
@@ -120,6 +131,8 @@ public class SwerveModule implements Sendable {
     builder.setSafeState(this::StopAll);
     builder.addDoubleProperty("Angle Encoder", angleMotorEncoder, null);
     builder.addDoubleProperty("Drive Encoder", driveMotorEncoder, null);
+    builder.addDoubleProperty("Absolute Encoder Reading", AbsoluteReading, null);
+    builder.addDoubleProperty("Position Encoder Reading", PositionReading, null);
     builder.addDoubleProperty("Angle Motor kP", this::getAnglekP, this::setAnglekP);
     builder.addDoubleProperty("Drive Motor kP", this::getDrivekP, this::setDrivekP);
     builder.addDoubleProperty("Drive Power", this::getThrottle, null);

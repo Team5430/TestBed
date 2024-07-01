@@ -1,7 +1,5 @@
 package com.team5430.util;
 
-import org.ejml.equation.VariableDouble;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -12,9 +10,11 @@ public class SwerveModuleGroup {
   private SwerveModule m_B;
   private SwerveModule m_C;
   private SwerveModule m_D;
+  private double lastAngle;
   public ShuffleboardTab DataTab = Shuffleboard.getTab("Swerve Chassis");
-  private double lastAngle = 0;
 
+  // TODO add SetPose2D, possibly SwerveModuleType as to configure chassis no matter the use case,
+  // filters for gyro to combat noise depending on data,
   public SwerveModuleGroup(SwerveModule A, SwerveModule B, SwerveModule C, SwerveModule D) {
     m_A = A;
     m_B = B;
@@ -59,21 +59,65 @@ public class SwerveModuleGroup {
     m_D.SetGains(AngleMotorkP, DriveMotorkP);
   }
 
-  public double VariableSpeedDecline(Double input) {
-
-    double breaking = 1 - input;
-    return breaking;
+  // **the wheel will go to the position that is greater than 0.2, otherwise stop power when less
+  // than or equal to*/
+  private double deadzone(double angle, double power) {
+    // If the input given is less than 0.3 then it will return last value saved
+    if (power < -0.3) {
+      lastAngle = angle;
+    }
+    return lastAngle;
   }
 
+  public double VariableSpeedDecline(Double input) {
+    return 1 - input;
+  }
 
-  public void Drive(
-      double wantedAngle, double throttle, double thirdAxis, double Robotangle, double breaking) {
+  /**
+   * @param wantedAngle sets modules heading angle to given value
+   * @param throttle sets velocity with a max set within SwerveModule
+   * @param rotation2d axis to control rotation of Robot
+   * @param robotAngle usually a gyroscope to feed the robots heading
+   * @see com.team5430.util.SwerveModule
+   */
+  public void Drive(double wantedAngle, double throttle, double rotation2d, double robotAngle) {
 
     // if turning within range of deadzone;
 
-    if (thirdAxis > .3 || thirdAxis < -.3) {
+    if (rotation2d > .3 || rotation2d < -.3) {
       // used to drive while turning
-      double power = MathUtil.applyDeadband(thirdAxis, .3) + throttle;
+      double power = MathUtil.applyDeadband(rotation2d, .3) + throttle;
+
+      // adjust as needed; use to rotate
+      m_A.setThrottle(-power / 2);
+      m_B.setThrottle(-power / 2);
+      m_C.setThrottle(power / 2);
+      m_D.setThrottle(power / 2);
+
+      setAngle(robotAngle);
+    } else {
+      // when not turning
+      setAngle(deadzone(wantedAngle, throttle));
+      setThrottle(MathUtil.applyDeadband(throttle, .2) * .1);
+    }
+  }
+
+  /**
+   * @param wantedAngle sets modules heading angle to given value
+   * @param throttle sets velocity with a max set within SwerveModule
+   * @param rotation2d axis to control rotation of Robot
+   * @param robotAngle usually a gyroscope to feed the robots heading
+   * @param breaking axis that controls a decreasing multiplier
+   * @see com.team5430.util.SwerveModule
+   */
+  public void Drive(
+      double wantedAngle, double throttle, double rotation2d, double robotAngle, double breaking) {
+
+    // if turning within range of deadzone;
+
+    if (rotation2d > .3 || rotation2d < -.3) {
+      // used to drive while turning
+      double power = MathUtil.applyDeadband(rotation2d, .3) + throttle;
 
       // adjust as needed; use to rotate
       m_A.setThrottle(-power / 2 * VariableSpeedDecline(breaking));
@@ -81,11 +125,11 @@ public class SwerveModuleGroup {
       m_C.setThrottle(power / 2 * VariableSpeedDecline(breaking));
       m_D.setThrottle(power / 2 * VariableSpeedDecline(breaking));
 
-      setAngle(Robotangle);
+      setAngle(robotAngle);
     } else {
       // when not turning
-      setAngle(wantedAngle);
-      setThrottle(MathUtil.applyDeadband(throttle, .2) * .1 *  VariableSpeedDecline(breaking));
+      setAngle(deadzone(wantedAngle, throttle));
+      setThrottle(MathUtil.applyDeadband(throttle, .2) * .1 * VariableSpeedDecline(breaking));
     }
   }
 
