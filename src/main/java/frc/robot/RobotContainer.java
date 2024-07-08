@@ -29,7 +29,7 @@ public class RobotContainer {
     m_TestBed.setDefaultCommand(
         new RunCommand(
             () ->
-                m_TestBed.drive(
+                    m_TestBed.DriveTrain.Drive(
                     driverController.getLeftStickDirectionDegrees(),
                     driverController.getLeftMagnitude(),
                     driverController.getRightX(),

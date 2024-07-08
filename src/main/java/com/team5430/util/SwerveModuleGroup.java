@@ -2,85 +2,89 @@ package com.team5430.util;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
 public class SwerveModuleGroup {
 
-  private SwerveModule m_A;
-  private SwerveModule m_B;
-  private SwerveModule m_C;
-  private SwerveModule m_D;
+  private final SwerveModule[] swerveModules;
   private double lastAngle;
-  public ShuffleboardTab DataTab = Shuffleboard.getTab("Swerve Chassis");
+  private String Title;
+  // TODO add SetPose2D, Velocity for SwerveModule in general; setThrottle
 
-  // TODO add SetPose2D, possibly SwerveModuleType as to configure chassis no matter the use case,
-  // filters for gyro to combat noise depending on data,
-  public SwerveModuleGroup(SwerveModule A, SwerveModule B, SwerveModule C, SwerveModule D) {
-    m_A = A;
-    m_B = B;
-    m_C = C;
-    m_D = D;
+  /**
+   * Modular Swerve creation, can be used to create up to 4 modules at a time. NOTE: Consider
+   * reserving CANids 0-11 for motors and CANCoders
+   *
+   * <pre>Supports:
+   *   CANCoders
+   *   TalonFX based motors
+   *   </pre>
+   * <p>
+   * An example use case would be a ModuleCount of 3, where
+   *
+   * <pre>Module_1              Module_2:             Module_3:
+   *
+   *  SteeringCANid: 0     SteeringCANid: 2     SteeringCANid: 4
+   *  ThrottleCANid: 1     ThrottleCANid: 3     ThrottleCANid: 5
+   *  CANCoderCANid: 8     CANCoderCANid: 9     CANCoderCANid: 10</pre>
+   * <p>
+   * to configure this to your use case, utilise SwerveModuleConstants
+   *
+   * @param ModuleCount Allows creation of up to 4 SwerveModules, based on your given config
+   * @see com.team5430.util.SwerveModuleConstants
+   */
+  public SwerveModuleGroup(int ModuleCount, SwerveModuleConstants config) {
+    Title = config.Name;
+    // minus 1 as arrays start at 0; would create 1 extra if not placed
+    swerveModules = new SwerveModule[ModuleCount - 1];
+    //
+    for (int i = 0; i < swerveModules.length; i++) {
+      // allows for synchronized creation of modules in order starting from CANids 0,1 for one
+      // module,
+      // following more CANids for more modules, and then reserving 8 9 10 11 for CANCoders
+      swerveModules[i] = new SwerveModule(i * 2, i * 2 + 1, i + 8, config);
+    }
   }
 
-  public void SwerveModuleType() {}
-
-  public void setAngle(double input) {
-    m_A.setAngle(input);
-    m_B.setAngle(input);
-    m_C.setAngle(input);
-    m_D.setAngle(input);
+  /**
+   * Set heading angle for all modules to follow
+   */
+  public void setSteering(double input) {
+    for (SwerveModule s : swerveModules) {
+      s.setSteering(input);
+    }
   }
 
+  /** Set throttle to all Swerve Modules */
   public void setThrottle(double throttle) {
-    m_A.setThrottle(throttle);
-    m_B.setThrottle(throttle);
-    m_C.setThrottle(throttle);
-    m_D.setThrottle(throttle);
-  }
-
-  public void setAngleRatio(double ratio) {
-    m_A.setAngleRatio(ratio);
-    m_B.setAngleRatio(ratio);
-    m_C.setAngleRatio(ratio);
-    m_D.setAngleRatio(ratio);
-  }
-
-  public void setDriveRatio(double ratio) {
-    m_A.setDriveRatio(ratio);
-    m_B.setDriveRatio(ratio);
-    m_C.setDriveRatio(ratio);
-    m_A.setDriveRatio(ratio);
-  }
-
-  public void SetGains(double AngleMotorkP, double DriveMotorkP) {
-    m_A.SetGains(AngleMotorkP, DriveMotorkP);
-    m_B.SetGains(AngleMotorkP, DriveMotorkP);
-    m_C.SetGains(AngleMotorkP, DriveMotorkP);
-    m_D.SetGains(AngleMotorkP, DriveMotorkP);
+    for (SwerveModule s : swerveModules) {
+      s.setThrottle(throttle);
+    }
   }
 
   // **the wheel will go to the position that is greater than 0.2, otherwise stop power when less
   // than or equal to*/
-  private double deadzone(double angle, double power) {
+  private double deadzone(double Steering, double power) {
     // If the input given is less than 0.3 then it will return last value saved
     if (power < -0.3) {
-      lastAngle = angle;
+      lastAngle = Steering;
     }
     return lastAngle;
   }
 
+  /** The bigger the input, smaller the output; meant to mimic breaking in a car */
   public double VariableSpeedDecline(Double input) {
     return 1 - input;
   }
 
   /**
-   * @param wantedAngle sets modules heading angle to given value
+   * @param wantedSteering sets modules heading Steering to given value
    * @param throttle sets velocity with a max set within SwerveModule
    * @param rotation2d axis to control rotation of Robot
-   * @param robotAngle usually a gyroscope to feed the robots heading
+   * @param robotSteering usually a gyroscope to feed the robots heading
    * @see com.team5430.util.SwerveModule
    */
-  public void Drive(double wantedAngle, double throttle, double rotation2d, double robotAngle) {
+  public void Drive(
+          double wantedSteering, double throttle, double rotation2d, double robotSteering) {
 
     // if turning within range of deadzone;
 
@@ -88,30 +92,37 @@ public class SwerveModuleGroup {
       // used to drive while turning
       double power = MathUtil.applyDeadband(rotation2d, .3) + throttle;
 
-      // adjust as needed; use to rotate
-      m_A.setThrottle(-power / 2);
-      m_B.setThrottle(-power / 2);
-      m_C.setThrottle(power / 2);
-      m_D.setThrottle(power / 2);
+      // set to opposite powers for rotation, adjust multipliers or dividends as needed
+      // NOTE: offset so 1 and 3 are given same power, and 0 and 2 their own respective
+      for (int i = 0; i < 3; i = i + 2) {
+        swerveModules[i].setThrottle(-power / 2);
+      }
+      for (int i = 1; i < 4; i = i + 2) {
+        swerveModules[i].setThrottle(power / 2);
+      }
 
-      setAngle(robotAngle);
+      setSteering(robotSteering);
     } else {
       // when not turning
-      setAngle(deadzone(wantedAngle, throttle));
+      setSteering(deadzone(wantedSteering, throttle));
       setThrottle(MathUtil.applyDeadband(throttle, .2) * .1);
     }
   }
 
   /**
-   * @param wantedAngle sets modules heading angle to given value
+   * @param wantedSteering sets modules heading Steering to given value
    * @param throttle sets velocity with a max set within SwerveModule
    * @param rotation2d axis to control rotation of Robot
-   * @param robotAngle usually a gyroscope to feed the robots heading
+   * @param robotSteering usually a gyroscope to feed the robots heading
    * @param breaking axis that controls a decreasing multiplier
    * @see com.team5430.util.SwerveModule
    */
   public void Drive(
-      double wantedAngle, double throttle, double rotation2d, double robotAngle, double breaking) {
+          double wantedSteering,
+          double throttle,
+          double rotation2d,
+      double robotSteering,
+      double breaking) {
 
     // if turning within range of deadzone;
 
@@ -119,28 +130,26 @@ public class SwerveModuleGroup {
       // used to drive while turning
       double power = MathUtil.applyDeadband(rotation2d, .3) + throttle;
 
-      // adjust as needed; use to rotate
-      m_A.setThrottle(-power / 2 * VariableSpeedDecline(breaking));
-      m_B.setThrottle(-power / 2 * VariableSpeedDecline(breaking));
-      m_C.setThrottle(power / 2 * VariableSpeedDecline(breaking));
-      m_D.setThrottle(power / 2 * VariableSpeedDecline(breaking));
+      // set to opposite powers for rotation, adjust multipliers or dividends as needed
+      for (int i = 0; i < 3; i = i + 2) {
+        swerveModules[i].setThrottle(-power / 2);
+      }
+      for (int i = 1; i < 4; i = i + 2) {
+        swerveModules[i].setThrottle(power / 2);
+      }
 
-      setAngle(robotAngle);
+      setSteering(robotSteering);
     } else {
       // when not turning
-      setAngle(deadzone(wantedAngle, throttle));
+      setSteering(deadzone(wantedSteering, throttle));
       setThrottle(MathUtil.applyDeadband(throttle, .2) * .1 * VariableSpeedDecline(breaking));
     }
   }
 
   public void addTab() {
-    // for shuffleboard
-    Shuffleboard.getTab("Swerve Chassis").add(m_A).withSize(2, 3);
-
-    Shuffleboard.getTab("Swerve Chassis").add(m_B).withSize(2, 3);
-
-    Shuffleboard.getTab("Swerve Chassis").add(m_C).withSize(2, 3);
-
-    Shuffleboard.getTab("Swerve Chassis").add(m_D).withSize(2, 3);
+    // add widgets for every swerveModule in ShuffleBoard
+    for (SwerveModule s : swerveModules) {
+      Shuffleboard.getTab(Title).add(s).withSize(2, 3);
+      }
   }
 }
