@@ -14,10 +14,6 @@ public class Robot extends TimedRobot {
 
   private TestBed m_TestBed = new TestBed();
 
-  public Robot() {
-    addPeriodic(m_TestBed::ControllerVibration, .02);
-  }
-
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer();
@@ -38,7 +34,9 @@ public class Robot extends TimedRobot {
   public void disabledExit() {}
 
   @Override
-  public void autonomousInit() {}
+  public void autonomousInit() {
+    // m_TestBed.angle(90, 30);
+  }
 
   @Override
   public void autonomousPeriodic() {}

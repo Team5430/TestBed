@@ -1,146 +1,172 @@
-package com.team5430.util;
 
+package com.team5430.util;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
+
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
-import edu.wpi.first.wpilibj.DriverStation;
-
 import java.util.function.DoubleSupplier;
 
 public class SwerveModule implements Sendable {
 
-  private TalonFX SteeringMotor;
-  private TalonFX ThrottleMotor;
-  private CANcoder magEncoder;
+  private TalonFX angleMotor;
+  private TalonFX driveMotor;
+  private CANcoder CANCoder; 
+  private double Angle = 360;
+  private double angleRatio = 1;
+  private double driveRatio = 8.14;
 
+  private double angle_kP = 0.75;
+  private double drive_kP = .15;
   private double appliedPower;
-  private SwerveModuleConstants _config;
-  private final String moduleName;
+  private double magEncoderOffset;
 
-  /**
-   * Constructor for individual Swerve Module of any kind, that is supported by TalonFX motors
-   *
-   * @param config configuration object to tend to your specific swerve module, to setup, use CANid
-   * @see SwerveModuleConstants for usage details
-   */
-  public SwerveModule(SwerveModuleConstants config) {
+  public SwerveModule(int AngleMotorCANid, int DriveMotorCANid, int CANCoderCANid, double offset) {
+    angleMotor = new TalonFX(AngleMotorCANid);
+    driveMotor = new TalonFX(DriveMotorCANid);
+     CANCoder = new CANcoder(CANCoderCANid);
 
-    moduleName = config.Name;
-
-    try {
-
-      SteeringMotor = new TalonFX(config.SteeringMotorCANid);
-      ThrottleMotor = new TalonFX(config.ThrottleMotorCANid);
-      magEncoder = new CANcoder(config.CANCoderCANid);
-
-      SendableRegistry.addLW(this, moduleName);
-    } catch (IllegalArgumentException e) {
-      DriverStation.reportError(moduleName, e.getStackTrace());
-    }
-
+     magEncoderOffset = offset;
     motorConfig();
-  }
-
-  /**
-   * If you insert values for CANid here, setting it in your config is not required
-   *
-   * @see SwerveModuleConstants
-   */
-  public SwerveModule(
-          int SteeringMotorCANid,
-          int ThrottleMotorCANid,
-          int CANCoderCANid,
-          SwerveModuleConstants config) {
-
-    moduleName = "Module" + SteeringMotorCANid;
-
-    try {
-
-      SteeringMotor = new TalonFX(SteeringMotorCANid);
-      ThrottleMotor = new TalonFX(ThrottleMotorCANid);
-      magEncoder = new CANcoder(CANCoderCANid);
-
-      SendableRegistry.addLW(this, moduleName);
-    } catch (IllegalArgumentException e) {
-      DriverStation.reportError(moduleName, e.getStackTrace());
-    }
-    _config = config;
-    motorConfig();
+    SendableRegistry.addChild(this, angleMotor);
+    SendableRegistry.addChild(this, driveMotor);
+    SendableRegistry.addLW(this, "Swerve Module");
   }
 
   private void motorConfig() {
     // create config objects
-    TalonFXConfiguration SteeringConfig = new TalonFXConfiguration();
-    TalonFXConfiguration ThrottleConfig = new TalonFXConfiguration();
-    // goes towards closest value that is equivalent to wanted
-    SteeringConfig.ClosedLoopGeneral.ContinuousWrap = true;
-    // Cancoder config
-    SteeringConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
-    SteeringConfig.Feedback.FeedbackRemoteSensorID = magEncoder.getDeviceID();
-    // used when there is not abs encoder
-    // SteeringConfig.Feedback.SensorToMechanismRatio = SteeringRatio;
+    TalonFXConfiguration angleConfig = new TalonFXConfiguration();
+    TalonFXConfiguration driveConfig = new TalonFXConfiguration();
+    CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
+    
+    // goes towards closest value that is equivalent to setpoint
+    angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
+    // gear ratio
+    angleConfig.Feedback.SensorToMechanismRatio = angleRatio;
     // proportional gains
-    SteeringConfig.Slot0.kP = _config.SteeringkP;
-    SteeringConfig.Feedback.SensorToMechanismRatio = _config.SteeringGearRatio;
-    ThrottleConfig.Slot0.kP = _config.ThrottlekP;
-    ThrottleConfig.Feedback.SensorToMechanismRatio = _config.ThrottleGearRatio;
+    angleConfig.Slot0.kP = angle_kP;
+    driveConfig.Slot0.kP = drive_kP;
+    
+    driveConfig.Feedback.SensorToMechanismRatio = driveRatio;
+
+    encoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
+    encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+    encoderConfig.MagnetSensor.MagnetOffset = -magEncoderOffset;
+
+    angleConfig.Feedback.FeedbackRemoteSensorID = CANCoder.getDeviceID();
+    angleConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+
+
 
     // apply configurations
-    SteeringMotor.getConfigurator().apply(SteeringConfig);
-    ThrottleMotor.getConfigurator().apply(ThrottleConfig);
+    angleMotor.getConfigurator().apply(angleConfig);
+    driveMotor.getConfigurator().apply(driveConfig);
+    CANCoder.getConfigurator().apply(encoderConfig);
 
     // zero encoders
-    SteeringMotor.setPosition(0);
-    ThrottleMotor.setPosition(0);
-  }
+
+    angleMotor.setPosition(magEncoderOffset);
+   }
+
+  
+
 
   // any degree value will be turned into rotational value
-  public void setSteering(double input) {
-    SteeringMotor.setControl(new PositionDutyCycle(input / 360));
+  public void setAngle(double input) { 
+
+  angleMotor.setControl(new PositionDutyCycle(input / Angle ));
+
+
   }
 
-  // TODO Switch to velocity; translate anything based on power as well
-  // percentage targeted to power motor
+  // power to motor that moves the wheel
   public void setThrottle(double throttle) {
-    ThrottleMotor.setControl(new DutyCycleOut(throttle));
+    driveMotor.setControl(new DutyCycleOut(throttle));
     appliedPower = throttle;
   }
 
-  public DoubleSupplier SteeringMotorEncoder = () -> SteeringMotor.getRotorPosition().getValue();
-
-  public DoubleSupplier ThrottleMotorEncoder = () -> ThrottleMotor.getRotorPosition().getValue();
-
-  public DoubleSupplier AbsoluteReading = () -> magEncoder.getAbsolutePosition().getValue();
-
-  public DoubleSupplier PositionReading = () -> magEncoder.getPosition().getValue();
-
-  public String getName() {
-    return moduleName;
-  }
-
+  // getters and setters
   public double getThrottle() {
     return appliedPower;
   }
 
+  public void setAngleRatio(double ratio) {
+    angleRatio = ratio;
+    motorConfig();
+  }
+
+  public void setDriveRatio(double ratio) {
+    driveRatio = ratio;
+  }
+
+ 
+
+  public void SetGains(double AngleMotorkP, double DriveMotorkP) {
+    angle_kP = AngleMotorkP;
+    drive_kP = DriveMotorkP;
+  }
+
   public void StopAll() {
-    setSteering(0);
+    setAngle(0);
     setThrottle(0);
+  }
+
+  public DoubleSupplier angleMotorEncoder = () -> angleMotor.getRotorPosition().getValue();
+
+  public DoubleSupplier driveMotorEncoder = () -> driveMotor.getRotorPosition().getValue();
+
+  public DoubleSupplier CANcoderEncoder = () -> CANCoder.getAbsolutePosition().getValue();
+
+  public void SetAngleEncoder(double set) {
+    setAngle(set);
+  }
+
+  public double driveMotorEncoder() {
+    return driveMotor.getRotorPosition().getValueAsDouble();
+  }
+
+  public void SetDriveEncoder(double input) {
+    driveMotor.setControl(new PositionDutyCycle(input));
+  }
+
+  public double getAnglekP() {
+    return angle_kP;
+  }
+
+  public void setAnglekP(double kP) {
+    angle_kP = kP;
+  }
+
+  public double getDrivekP() {
+    return drive_kP;
+  }
+
+  public void setDrivekP(double kP) {
+    drive_kP = kP;
   }
 
   @Override
   public void initSendable(SendableBuilder builder) {
+    builder.setSmartDashboardType("Swerve Module Telemetry");
     builder.setActuator(true);
     builder.setSafeState(this::StopAll);
-    builder.addDoubleProperty("Steering Encoder", SteeringMotorEncoder, null);
-    builder.addDoubleProperty("Throttle Encoder", ThrottleMotorEncoder, null);
-    builder.addDoubleProperty("Absolute Encoder Reading", AbsoluteReading, null);
-    builder.addDoubleProperty("Position Encoder Reading", PositionReading, null);
-    builder.addDoubleProperty("Throttle Power", this::getThrottle, null);
+    builder.addDoubleProperty("Angle Encoder", angleMotorEncoder, null);
+    builder.addDoubleProperty("CANCoder", CANcoderEncoder, null);
+    builder.addDoubleProperty("Drive Encoder", driveMotorEncoder, null);
+    builder.addDoubleProperty("Angle Motor kP", this::getAnglekP, null);
+    builder.addDoubleProperty("Drive Motor kP", this::getDrivekP, null);
+    builder.addDoubleProperty("Drive Motor Power", this::getThrottle, null);
   }
+
+  
 }

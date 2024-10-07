@@ -1,8 +1,7 @@
 package frc.robot.subsystems;
 
 import com.kauailabs.navx.frc.AHRS;
-import com.team5430.util.CollisionDetection;
-import com.team5430.util.SwerveModuleConstants;
+import com.team5430.util.SwerveModule;
 import com.team5430.util.SwerveModuleGroup;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -13,37 +12,54 @@ public class TestBed extends SubsystemBase {
 
   public TestBed() {}
 
-  // init objects
+  // constants
+
   public AHRS gyro = new AHRS(Port.kMXP);
 
-  public CollisionDetection mfeedback = new CollisionDetection();
+  //swerve CANids; 0 through 7, even being drive motor, and odd being angle motor, following alphabetically,
+  //Module A -> Module B -> Module C
+  SwerveModuleGroup DriveTrain =
+      new SwerveModuleGroup(
+        new SwerveModule(0, 1, 0, -0.36279 ),
+        new SwerveModule(2, 3, 1, 0),
+        new SwerveModule(4, 5, 2, -.011 ),
+        new SwerveModule(6, 7, 3, -.26)
+        );
 
-  private final SwerveModuleConstants SwerveConfig = new SwerveModuleConstants();
 
-  // TODO change motor CANids irl
-
-  public SwerveModuleGroup DriveTrain = new SwerveModuleGroup(4, SwerveConfig);
+  public double lastAngle = 0;
 
   public void motorConfig() {
-    SwerveConfig.SteeringGearRatio = 1;
-    SwerveConfig.ThrottleGearRatio = 8.14;
-    SwerveConfig.SteeringkP = .6;
-    SwerveConfig.ThrottlekP = .5;
-    DriveTrain.addTab();
+    SmartDashboard.putData("DriveTrain", DriveTrain);
+    SmartDashboard.putData("Gyroscope", gyro);
+  //DriveTrain.setOffset(0.328, -0.000146, -0.028, 0.2246);
   }
 
-  public void ControllerVibration() {
-    RobotContainer.driverController.setRumble(mfeedback.CollisionDetected());
+
+  // setAngle will set the directional angle
+  public void drive(double wantedAngle, double throttle, double z, double gyroscope, double breaking) {
+    DriveTrain.Drive(deadzone(wantedAngle, throttle), throttle, z, gyroscope, breaking);
   }
+
+  // **the wheel will go to the position that is greater than 0.2, otherwise stop power when less
+  // than or equal to*/
+  public double deadzone(double angle, double power) {
+    // If the input given is less than 0.3 the rotation will reset to 0
+    if (power < -0.3) {
+      lastAngle = angle;
+    if (power > -0.3) {
+        return angle;
+      }
+    }
+    return lastAngle;
+  }
+
 
   @Override
   public void periodic() {
 
-    // collision detection
-    SmartDashboard.putBoolean("Collision detection", mfeedback.CollisionDetected());
-
-    SmartDashboard.putNumber(
-        "degrees", RobotContainer.driverController.getLeftStickDirectionDegrees());
-    SmartDashboard.putNumber("magnitude", RobotContainer.driverController.getLeftMagnitude());
+    SmartDashboard.updateValues();
+    SmartDashboard.putNumber("degrees", RobotContainer.driverJoystick.getLeftStickDirectionDegrees());
+    SmartDashboard.putNumber("magnitude", RobotContainer.driverJoystick.getLeftMagnitude());
   }
 }
