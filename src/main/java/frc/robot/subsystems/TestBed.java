@@ -20,19 +20,20 @@ public class TestBed extends SubsystemBase {
   //Module A -> Module B -> Module C
   SwerveModuleGroup DriveTrain =
       new SwerveModuleGroup(
-        new SwerveModule(0, 1, 0, -0.36279 ),
-        new SwerveModule(2, 3, 1, 0),
-        new SwerveModule(4, 5, 2, -.011 ),
-        new SwerveModule(6, 7, 3, -.26)
+        new SwerveModule(0, 1, 0, -0.387  ),
+        new SwerveModule(2, 3, 1, -0.265),
+        new SwerveModule(4, 5, 2, -.03 ),
+        new SwerveModule(6, 7, 3, 0)
         );
 
 
   public double lastAngle = 0;
 
-  public void motorConfig() {
+  public void publishData() {
     SmartDashboard.putData("DriveTrain", DriveTrain);
     SmartDashboard.putData("Gyroscope", gyro);
-  //DriveTrain.setOffset(0.328, -0.000146, -0.028, 0.2246);
+    SmartDashboard.putNumber("degrees", RobotContainer.driverJoystick.getLeftStickDirectionDegrees());
+    SmartDashboard.putNumber("magnitude", RobotContainer.driverJoystick.getLeftMagnitude());
   }
 
 
@@ -59,7 +60,6 @@ public class TestBed extends SubsystemBase {
   public void periodic() {
 
     SmartDashboard.updateValues();
-    SmartDashboard.putNumber("degrees", RobotContainer.driverJoystick.getLeftStickDirectionDegrees());
-    SmartDashboard.putNumber("magnitude", RobotContainer.driverJoystick.getLeftMagnitude());
+    DriveTrain.publishStates();
   }
 }

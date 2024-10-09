@@ -60,7 +60,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void simulationInit() {
-    m_TestBed.motorConfig();
+    m_TestBed.publishData();
   }
 
   @Override

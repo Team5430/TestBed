@@ -25,10 +25,11 @@ public class SwerveModule implements Sendable {
   private double Angle = 360;
   private double angleRatio = 1;
   private double driveRatio = 8.14;
+  public double currentHeading;
+  public double currentThrottle;
 
-  private double angle_kP = 0.75;
+  private double angle_kP = 0.95;
   private double drive_kP = .15;
-  private double appliedPower;
   private double magEncoderOffset;
 
   public SwerveModule(int AngleMotorCANid, int DriveMotorCANid, int CANCoderCANid, double offset) {
@@ -85,19 +86,23 @@ public class SwerveModule implements Sendable {
   public void setAngle(double input) { 
 
   angleMotor.setControl(new PositionDutyCycle(input / Angle ));
-
+    currentHeading = input/Angle;
 
   }
 
   // power to motor that moves the wheel
   public void setThrottle(double throttle) {
     driveMotor.setControl(new DutyCycleOut(throttle));
-    appliedPower = throttle;
+    currentThrottle = throttle;
   }
 
   // getters and setters
   public double getThrottle() {
-    return appliedPower;
+    return currentThrottle;
+  }
+
+  public double getHeading(){
+    return currentHeading;
   }
 
   public void setAngleRatio(double ratio) {
