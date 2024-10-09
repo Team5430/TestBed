@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.team5430.util.SwerveModuleConstants;
 import com.kauailabs.navx.frc.AHRS;
 import com.team5430.util.SwerveModule;
 import com.team5430.util.SwerveModuleGroup;
@@ -16,15 +17,12 @@ public class TestBed extends SubsystemBase {
 
   public AHRS gyro = new AHRS(Port.kMXP);
 
+  private SwerveModuleConstants mConfig;
+
   //swerve CANids; 0 through 7, even being drive motor, and odd being angle motor, following alphabetically,
   //Module A -> Module B -> Module C
   SwerveModuleGroup DriveTrain =
-      new SwerveModuleGroup(
-        new SwerveModule(0, 1, 0, -0.387  ),
-        new SwerveModule(2, 3, 1, -0.265),
-        new SwerveModule(4, 5, 2, -.03 ),
-        new SwerveModule(6, 7, 3, 0)
-        );
+      new SwerveModuleGroup(4 , mConfig);
 
 
   public double lastAngle = 0;
@@ -60,6 +58,5 @@ public class TestBed extends SubsystemBase {
   public void periodic() {
 
     SmartDashboard.updateValues();
-    DriveTrain.publishStates();
   }
 }

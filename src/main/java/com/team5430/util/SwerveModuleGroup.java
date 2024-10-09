@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
@@ -13,105 +14,95 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrain;
+
+
 public class SwerveModuleGroup implements Sendable {
 
-  private SwerveModule m_A;
-  private SwerveModule m_B;
-  private SwerveModule m_C;
-  private SwerveModule m_D;
-
-  SwerveModuleState state_A;
-  SwerveModuleState state_B;
-  SwerveModuleState state_C;
-  SwerveModuleState state_D;
+  private SwerveModule[] swerveModules;
+  private int moduleCount;
 
   private DoubleSupplier gyroscope;
   private double currentAngle;
   private double forward;
   private double sideways;
   private double angular;
-  ChassisSpeeds speeds;
-  private final StructArrayPublisher<SwerveModuleState> publisher;
-
-  public SwerveModuleGroup(SwerveModule A, SwerveModule B, SwerveModule C, SwerveModule D) {
-    m_A = A;
-    m_B = B;
-    m_C = C;
-    m_D = D;
-    publisher = NetworkTableInstance.getDefault()
-    .getStructArrayTopic("/SwerveStates", SwerveModuleState.struct).publish();
-    initStates();
+  private ChassisSpeeds speeds;
+  private SwerveDriveKinematics m_Kinematics;
+  private SwerveModuleState[] m_States;
+  private SwerveModulePosition[] m_Positions;
   
-  }
-//Translation2d -> location of the graph in swerve module is  Front is postive, Left is positive 
+  
+/**
+   * Modular Swerve creation, can be used to create up to 4 modules at a time. NOTE: Consider
+   * reserving CANids 0-8 for motors and CANCoders
+   *
+   * <pre>Supports:
+   *   CANCoders
+   *   TalonFX based motors
+   *   </pre>
+   * <p>
+   * An example use case would be a ModuleCount of 3, where
+   *
+   * <pre>Module_1              Module_2:             Module_3:
+   *
+   *  SteeringCANid: 0     SteeringCANid: 2     SteeringCANid: 4
+   *  ThrottleCANid: 1     ThrottleCANid: 3     ThrottleCANid: 5
+   *  CANCoderCANid: 0     CANCoderCANid: 1     CANCoderCANid: 2</pre>
+   * <p>
+   * to configure this to your use case, utilise SwerveModuleConstants
+   *
+   * @param ModuleCount Allows creation of up to 4 SwerveModules, based on your given config
+   * @see com.team5430.util.SwerveModuleConstants
+   */
+  public SwerveModuleGroup(int ModuleCount, SwerveModuleConstants config) {
+moduleCount = ModuleCount;
+    for(int i= 0; i < ModuleCount; ++i){
+      swerveModules[i] = new SwerveModule(i * 2, i * 2 + 1, i, config.STEERING_MODULE_OFFSET[i]);
+    }
+ 
+    //Translation2d -> location of the graph in swerve module is  Front is postive, Left is positive 
 //Measurement: Meters 
-  Translation2d A_Location = new Translation2d(-0.267, -0.267); //back right
+ /*  Translation2d A_Location = new Translation2d(-0.267, -0.267); //back right
   Translation2d B_Location = new Translation2d(0.267, 0.267); //front left
   Translation2d C_Location = new Translation2d(0.267, -0.267); //back left
   Translation2d D_Location = new Translation2d(-0.267, 0.267); //front right
 
-  //Log all Translation2d variables in Kinematic
-  SwerveDriveKinematics m_Kinematics = new SwerveDriveKinematics(
-    A_Location, B_Location, C_Location, D_Location);
 
-    //ChassisSpeeds: 1 m/s front, 3m/s to left, 1.5 radians per seconds clockwise
-    //NOT A CURRENT VELOCITY, MAX VELOCITY
-        //converting chassis speeds to module states
-        public void initStates(){
-     state_A = new SwerveModuleState(m_A.getThrottle(), Rotation2d.fromDegrees(m_A.getHeading()));
-     state_B = new SwerveModuleState(m_B.getThrottle(), Rotation2d.fromDegrees(m_B.getHeading()));
-     state_C = new SwerveModuleState(m_C.getThrottle(), Rotation2d.fromDegrees(m_C.getHeading()));
-     state_D = new SwerveModuleState(m_D.getThrottle(), Rotation2d.fromDegrees(m_D.getHeading()));
-    
-
-    speeds = m_Kinematics.toChassisSpeeds(
-    state_A, state_B, state_C, state_D);
+  speeds = m_Kinematics.toChassisSpeeds(
+    );
     
      forward = speeds.vxMetersPerSecond;
      sideways = speeds.vyMetersPerSecond;
      angular = speeds.omegaRadiansPerSecond;
+
+     m_Kinematics = new SwerveDriveKinematics(
+    A_Location, B_Location, C_Location, D_Location);
+
+
+  */
   }
-   
-
-
-
 
   public void setAngle(double input) {
-    m_A.setAngle(input);
-    m_B.setAngle(input);
-    m_C.setAngle(input);
-    m_D.setAngle(input);
-  }
+ for(SwerveModule s : swerveModules){
+  s.setAngle(input);
+ }
+}
 
 
   public void setThrottle(double throttle) {
-   //m_A.setThrottle(speeds.vxMetersPerSecond);
-   m_A.setThrottle(throttle);
-    m_B.setThrottle(-throttle);
-    m_C.setThrottle(-throttle);
-    m_D.setThrottle(throttle);
+
+   for(int i = 0; i < moduleCount;  ++i) {
+   
+    //conditions depend on module locations
+    if(i == 3 || i == 0 ){
+    swerveModules[i].setThrottle(throttle);
+   }else{
+    swerveModules[i].setThrottle(-throttle);
+   }
+
   }
 
-  public void setAngleRatio(double ratio) {
-    m_A.setAngleRatio(ratio);
-    m_B.setAngleRatio(ratio);
-    m_C.setAngleRatio(ratio);
-    m_D.setAngleRatio(ratio);
-    
-  }
-
-  public void setDriveRatio(double ratio) {
-    m_A.setDriveRatio(ratio);
-    m_B.setDriveRatio(ratio);
-    m_C.setDriveRatio(ratio);
-    m_A.setDriveRatio(ratio);
-  }
-
-  public void SetGains(double AngleMotorkP, double DriveMotorkP) {
-    m_A.SetGains(AngleMotorkP, DriveMotorkP);
-    m_B.SetGains(AngleMotorkP, DriveMotorkP);
-    m_C.SetGains(AngleMotorkP, DriveMotorkP);
-    m_D.SetGains(AngleMotorkP, DriveMotorkP);
   }
 
   public void setGyro(DoubleSupplier GyroscopeAngle) {
@@ -135,11 +126,10 @@ public class SwerveModuleGroup implements Sendable {
       // used to drive while turning
       double power = MathUtil.applyDeadband(thirdAxis, .3) + throttle;
 
-      // adjust as needed; used to change Robotangle
-      m_A.setThrottle(power/5  * VariableSpeedDecline(breaking));
-      m_B.setThrottle(power/5  * VariableSpeedDecline(breaking));
-      m_C.setThrottle(power/5  * VariableSpeedDecline(breaking));
-      m_D.setThrottle(power/5  * VariableSpeedDecline(breaking));
+      //adjust as needed for turning speed
+      for(SwerveModule s : swerveModules){
+        s.setThrottle(power/5  * VariableSpeedDecline(breaking));
+      }
 
       setAngle(Robotangle - currentAngle);
     } else {
@@ -153,20 +143,12 @@ public class SwerveModuleGroup implements Sendable {
 
   @Override
   public void initSendable(SendableBuilder builder) {
-    m_A.initSendable(builder);
-    m_B.initSendable(builder);
-    m_C.initSendable(builder);
-    m_D.initSendable(builder);
+for(SwerveModule s : swerveModules){
+  s.initSendable(builder);
+}
   }
 
-  public void publishStates(){
-    publisher.set(new SwerveModuleState[] {
-      state_A,
-      state_B,
-      state_C,
-      state_D
-    });
-  }
+ 
   
 
 

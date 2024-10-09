@@ -9,8 +9,13 @@ public class SwerveModuleConstants {
   public int CANCoderCANid;
   public double SteeringGearRatio = 1;
   public double ThrottleGearRatio = 8.14;
-  public double SteeringkP  = .1;
+  public double SteeringkP  = .95;
   public double ThrottlekP = .5;
   public String Name;
-  public static final double MODULE_STEER_OFFSET = 0;
+  public double[] STEERING_MODULE_OFFSET ={
+    0.387,
+    0.265,
+    .03,
+    0
+  };
   }
