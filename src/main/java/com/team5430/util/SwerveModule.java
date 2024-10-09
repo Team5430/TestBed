@@ -32,6 +32,8 @@ public class SwerveModule implements Sendable {
   private double drive_kP = .15;
   private double magEncoderOffset;
 
+  public SwerveModule(){}
+  
   public SwerveModule(int AngleMotorCANid, int DriveMotorCANid, int CANCoderCANid, double offset) {
     angleMotor = new TalonFX(AngleMotorCANid);
     driveMotor = new TalonFX(DriveMotorCANid);

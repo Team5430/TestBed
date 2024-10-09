@@ -1,29 +1,23 @@
 package com.team5430.util;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 
 import java.util.function.DoubleSupplier;
 
-import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrain;
 
 
 public class SwerveModuleGroup implements Sendable {
 
-  private SwerveModule[] swerveModules;
+//max is 4 swerve modules; accounted for array
+  private SwerveModule[] swerveModules =  new SwerveModule[4];
   private int moduleCount;
+
 
   private DoubleSupplier gyroscope;
   private double currentAngle;
+  /* 
   private double forward;
   private double sideways;
   private double angular;
@@ -31,7 +25,7 @@ public class SwerveModuleGroup implements Sendable {
   private SwerveDriveKinematics m_Kinematics;
   private SwerveModuleState[] m_States;
   private SwerveModulePosition[] m_Positions;
-  
+  */
   
 /**
    * Modular Swerve creation, can be used to create up to 4 modules at a time. NOTE: Consider
@@ -56,10 +50,13 @@ public class SwerveModuleGroup implements Sendable {
    * @see com.team5430.util.SwerveModuleConstants
    */
   public SwerveModuleGroup(int ModuleCount, SwerveModuleConstants config) {
+
 moduleCount = ModuleCount;
-    for(int i= 0; i < ModuleCount; ++i){
+
+    for(int i= 0; i < moduleCount; i++){
       swerveModules[i] = new SwerveModule(i * 2, i * 2 + 1, i, config.STEERING_MODULE_OFFSET[i]);
     }
+  
  
     //Translation2d -> location of the graph in swerve module is  Front is postive, Left is positive 
 //Measurement: Meters 
@@ -84,25 +81,18 @@ moduleCount = ModuleCount;
   }
 
   public void setAngle(double input) {
- for(SwerveModule s : swerveModules){
-  s.setAngle(input);
- }
+    
+   for(SwerveModule s : swerveModules){
+    s.setAngle(input);
+   }
 }
 
 
   public void setThrottle(double throttle) {
 
-   for(int i = 0; i < moduleCount;  ++i) {
-   
-    //conditions depend on module locations
-    if(i == 3 || i == 0 ){
-    swerveModules[i].setThrottle(throttle);
-   }else{
-    swerveModules[i].setThrottle(-throttle);
-   }
-
-  }
-
+ for(SwerveModule s : swerveModules){
+  s.setThrottle(throttle);
+ }
   }
 
   public void setGyro(DoubleSupplier GyroscopeAngle) {
@@ -127,15 +117,17 @@ moduleCount = ModuleCount;
       double power = MathUtil.applyDeadband(thirdAxis, .3) + throttle;
 
       //adjust as needed for turning speed
-      for(SwerveModule s : swerveModules){
-        s.setThrottle(power/5  * VariableSpeedDecline(breaking));
-      }
+            setThrottle(power/5  * VariableSpeedDecline(breaking));
 
       setAngle(Robotangle - currentAngle);
     } else {
       // when not turning
       setAngle(wantedAngle);
-      setThrottle(throttle/5  * VariableSpeedDecline(breaking));
+      
+      swerveModules[0].setThrottle(throttle/5 * VariableSpeedDecline(breaking));
+      swerveModules[1].setThrottle(-throttle/5 * VariableSpeedDecline(breaking));
+      swerveModules[2].setThrottle(-throttle/5 * VariableSpeedDecline(breaking));
+      swerveModules[3].setThrottle(throttle/5 * VariableSpeedDecline(breaking));
     }
 
   

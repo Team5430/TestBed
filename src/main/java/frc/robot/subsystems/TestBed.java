@@ -17,8 +17,9 @@ public class TestBed extends SubsystemBase {
 
   public AHRS gyro = new AHRS(Port.kMXP);
 
-  private SwerveModuleConstants mConfig;
+  private SwerveModuleConstants mConfig = new SwerveModuleConstants();
 
+  
   //swerve CANids; 0 through 7, even being drive motor, and odd being angle motor, following alphabetically,
   //Module A -> Module B -> Module C
   SwerveModuleGroup DriveTrain =
