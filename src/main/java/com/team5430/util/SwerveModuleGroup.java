@@ -1,11 +1,11 @@
 package com.team5430.util;
 
-import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
-
-import java.util.function.DoubleSupplier;
-
 
 
 public class SwerveModuleGroup implements Sendable {
@@ -14,18 +14,8 @@ public class SwerveModuleGroup implements Sendable {
   private SwerveModule[] swerveModules =  new SwerveModule[4];
   private int moduleCount;
 
+  private static SwerveDriveKinematics m_Kinematics;
 
-  private DoubleSupplier gyroscope;
-  private double currentAngle;
-  /* 
-  private double forward;
-  private double sideways;
-  private double angular;
-  private ChassisSpeeds speeds;
-  private SwerveDriveKinematics m_Kinematics;
-  private SwerveModuleState[] m_States;
-  private SwerveModulePosition[] m_Positions;
-  */
   
 /**
    * Modular Swerve creation, can be used to create up to 4 modules at a time. NOTE: Consider
@@ -56,48 +46,12 @@ moduleCount = ModuleCount;
     for(int i= 0; i < moduleCount; i++){
       swerveModules[i] = new SwerveModule(i * 2, i * 2 + 1, i, config.STEERING_MODULE_OFFSET[i]);
     }
-  
- 
-    //Translation2d -> location of the graph in swerve module is  Front is postive, Left is positive 
-//Measurement: Meters 
- /*  Translation2d A_Location = new Translation2d(-0.267, -0.267); //back right
-  Translation2d B_Location = new Translation2d(0.267, 0.267); //front left
-  Translation2d C_Location = new Translation2d(0.267, -0.267); //back left
-  Translation2d D_Location = new Translation2d(-0.267, 0.267); //front right
+    //set Kinematics
+    m_Kinematics = config.Kinematics;
 
-
-  speeds = m_Kinematics.toChassisSpeeds(
-    );
-    
-     forward = speeds.vxMetersPerSecond;
-     sideways = speeds.vyMetersPerSecond;
-     angular = speeds.omegaRadiansPerSecond;
-
-     m_Kinematics = new SwerveDriveKinematics(
-    A_Location, B_Location, C_Location, D_Location);
-
-
-  */
+//**next step! */    SwerveDrivePoseEstimator t = new SwerveDrivePoseEstimator(m_Kinematics, null, null, null)
   }
-
-  public void setAngle(double input) {
-    
-   for(SwerveModule s : swerveModules){
-    s.setAngle(input);
-   }
-}
-
-
-  public void setThrottle(double throttle) {
-
- for(SwerveModule s : swerveModules){
-  s.setThrottle(throttle);
- }
-  }
-
-  public void setGyro(DoubleSupplier GyroscopeAngle) {
-    gyroscope = GyroscopeAngle;
-  }
+   
 
   
    /** The bigger the input, smaller the output; meant to mimic breaking in a car */
@@ -105,44 +59,28 @@ moduleCount = ModuleCount;
     return 1 - input;
   }
 
-  public void getGyroAngle() {
-    currentAngle = gyroscope.getAsDouble();
-  }
+  public void SetStates(SwerveModuleState... currentStates){  
+  //Prevent Speed from surpassing maxSpeed
+    SwerveDriveKinematics.desaturateWheelSpeeds(currentStates, 12);
 
-  public void Drive(double wantedAngle, double throttle, double thirdAxis, double Robotangle, double breaking) {
-
-    // if turning within range of deadzone;
-    if (thirdAxis > .3 || thirdAxis < -.3) {
-      // used to drive while turning
-      double power = MathUtil.applyDeadband(thirdAxis, .3) + throttle;
-
-      //adjust as needed for turning speed
-            setThrottle(power/5  * VariableSpeedDecline(breaking));
-
-      setAngle(Robotangle - currentAngle);
-    } else {
-      // when not turning
-      setAngle(wantedAngle);
-      
-      swerveModules[0].setThrottle(throttle/5 * VariableSpeedDecline(breaking));
-      swerveModules[1].setThrottle(-throttle/5 * VariableSpeedDecline(breaking));
-      swerveModules[2].setThrottle(-throttle/5 * VariableSpeedDecline(breaking));
-      swerveModules[3].setThrottle(throttle/5 * VariableSpeedDecline(breaking));
+    //apply states in a for Loop.
+    for(int i = 0; i < moduleCount; i++){
+      swerveModules[i].setState(currentStates[i]);
     }
 
-  
   }
 
+  public void Drive(ChassisSpeeds speeds){
+    SwerveModuleState states[] = m_Kinematics.toSwerveModuleStates(speeds);
+    SetStates(states);
+  }
+
+  //Dashboard sendoff
   @Override
   public void initSendable(SendableBuilder builder) {
 for(SwerveModule s : swerveModules){
   s.initSendable(builder);
-}
+    }
   }
 
- 
-  
-
-
-  
 }

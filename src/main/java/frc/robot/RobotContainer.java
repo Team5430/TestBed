@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.TestBed;
 
@@ -28,19 +27,15 @@ public class RobotContainer {
         new RunCommand(
             () ->
                 m_TestBed.drive(
-                    driverJoystick.getLeftStickDirectionDegrees(),
-                     driverJoystick.getLeftMagnitude() * -.5,
-                      driverJoystick.getRightX(),
-                       m_TestBed.gyro.getAngle(),
-                       driverJoystick.getRightTriggerAxis()),
+                    driverJoystick.getLeftX(),
+                    driverJoystick.getLeftY(),
+                    driverJoystick.getRightX(),
+                    driverJoystick.getRightTriggerAxis()),
             m_TestBed));
   }
 
   // contorller bindings here
   private void configureBindings() {
-
-    Trigger zeroAngle = new Trigger(driverJoystick.button(12));
-
 
     /*
     Trigger controllerVibration = new Trigger(m_TestBed.mfeedback::CollisionDetected);

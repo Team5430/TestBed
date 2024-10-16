@@ -2,8 +2,10 @@ package frc.robot.subsystems;
 
 import com.team5430.util.SwerveModuleConstants;
 import com.kauailabs.navx.frc.AHRS;
-import com.team5430.util.SwerveModule;
 import com.team5430.util.SwerveModuleGroup;
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -37,8 +39,11 @@ public class TestBed extends SubsystemBase {
 
 
   // setAngle will set the directional angle
-  public void drive(double wantedAngle, double throttle, double z, double gyroscope, double breaking) {
-    DriveTrain.Drive(deadzone(wantedAngle, throttle), throttle, z, gyroscope, breaking);
+  public void drive(double x, double y, double rotation,  double breaking) {
+    DriveTrain.Drive(new ChassisSpeeds(
+                      MathUtil.applyDeadband(x, .3) * breaking,
+                      MathUtil.applyDeadband(y, .3) * breaking,
+                      rotation));
   }
 
   // **the wheel will go to the position that is greater than 0.2, otherwise stop power when less
