@@ -5,6 +5,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -27,7 +28,7 @@ public class SwerveModule implements Sendable {
   private double driveRatio = 8.14;
   public double currentHeading;
   public double currentThrottle;
-  private SwerveModulePosition internalState;
+  private SwerveModulePosition internalState = new SwerveModulePosition();
 
   
     private StatusSignal<Double> drivePosition;
@@ -58,12 +59,17 @@ public class SwerveModule implements Sendable {
     signals[3] = angleVelocity;
   }
 
+  public void DriveToDistance(double distance){
+    angleMotor.setControl(new PositionDutyCycle(0));
+    driveMotor.setControl(new PositionDutyCycle(distance));
+  }
   private void motorConfig() {
     // create config objects
     TalonFXConfiguration angleConfig = new TalonFXConfiguration();
     TalonFXConfiguration driveConfig = new TalonFXConfiguration();
     CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
     
+    angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
     // gear ratio
     angleConfig.Feedback.SensorToMechanismRatio = angleRatio;
     // proportional gains
@@ -97,8 +103,9 @@ public class SwerveModule implements Sendable {
 
     var optimize =  SwerveModuleState.optimize(state, internalState.angle);
     //Heading
-      double wantedAngle = optimize.angle.getRotations();
-      angleMotor.setControl(new PositionDutyCycle(wantedAngle));
+      double wantedAngle = optimize.angle.getDegrees();
+      angleMotor.setControl(new PositionDutyCycle(wantedAngle/360));
+      //-Math.abs(((wantedAngle - 270)/360))));
       //Throttle
         double wantedVelocity = optimize.speedMetersPerSecond;
         driveMotor.setControl(new VelocityDutyCycle(wantedVelocity));
@@ -128,6 +135,10 @@ public class SwerveModule implements Sendable {
     }
 
 
+    public void invertThrottle(boolean input){
+      
+      driveMotor.setInverted(input);
+    }
   public void Stop() { 
     angleMotor.stopMotor();
     driveMotor.stopMotor();

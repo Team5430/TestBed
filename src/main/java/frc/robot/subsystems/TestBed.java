@@ -24,7 +24,7 @@ public class TestBed extends SubsystemBase {
   
   //swerve CANids; 0 through 7, even being drive motor, and odd being angle motor, following alphabetically,
   //Module A -> Module B -> Module C
-  SwerveModuleGroup DriveTrain =
+ public SwerveModuleGroup DriveTrain =
       new SwerveModuleGroup(4 , mConfig);
 
 
@@ -33,8 +33,7 @@ public class TestBed extends SubsystemBase {
   public void publishData() {
     SmartDashboard.putData("DriveTrain", DriveTrain);
     SmartDashboard.putData("Gyroscope", gyro);
-    SmartDashboard.putNumber("degrees", RobotContainer.driverJoystick.getLeftStickDirectionDegrees());
-    SmartDashboard.putNumber("magnitude", RobotContainer.driverJoystick.getLeftMagnitude());
+
   }
 
 
@@ -43,7 +42,7 @@ public class TestBed extends SubsystemBase {
     DriveTrain.Drive(new ChassisSpeeds(
                       MathUtil.applyDeadband(x, .3) * breaking,
                       MathUtil.applyDeadband(y, .3) * breaking,
-                      rotation));
+                     MathUtil.applyDeadband(rotation, .3)));
   }
 
   // **the wheel will go to the position that is greater than 0.2, otherwise stop power when less

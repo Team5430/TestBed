@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.TestBed;
 
@@ -17,7 +18,7 @@ public class RobotContainer {
   // init subsystem
   private TestBed m_TestBed = new TestBed();
   // init new joystick on usb port 0; can be interchanged for any wired controller on Port 0
-  public static CustomXboxController driverJoystick = new CustomXboxController(0);
+  public static CommandJoystick driverJoystick = new CommandJoystick(0);
 
   public RobotContainer() {
     // apply set bindings
@@ -27,10 +28,10 @@ public class RobotContainer {
         new RunCommand(
             () ->
                 m_TestBed.drive(
-                    driverJoystick.getLeftX(),
-                    driverJoystick.getLeftY(),
-                    driverJoystick.getRightX(),
-                    driverJoystick.getRightTriggerAxis()),
+                    driverJoystick.getX(),
+                    driverJoystick.getY(),
+                    driverJoystick.getRawAxis(2),
+                    driverJoystick.getRawAxis(3)),
             m_TestBed));
   }
 
@@ -45,6 +46,6 @@ public class RobotContainer {
   */
 }
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    return Commands.sequence(new InstantCommand(() -> m_TestBed.DriveTrain.DriveToDistance(30), m_TestBed));
   }
 }

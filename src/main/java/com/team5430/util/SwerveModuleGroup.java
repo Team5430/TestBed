@@ -45,6 +45,7 @@ moduleCount = ModuleCount;
 
     for(int i= 0; i < moduleCount; i++){
       swerveModules[i] = new SwerveModule(i * 2, i * 2 + 1, i, config.STEERING_MODULE_OFFSET[i]);
+      swerveModules[i].invertThrottle(config.MOTOR_INVERT[i]);
     }
     //set Kinematics
     m_Kinematics = config.Kinematics;
@@ -59,6 +60,11 @@ moduleCount = ModuleCount;
     return 1 - input;
   }
 
+  public void DriveToDistance(double distance){
+    for(int i = 0; i < moduleCount; i++){
+      swerveModules[i].DriveToDistance(distance);
+    }
+  }
   public void SetStates(SwerveModuleState... currentStates){  
   //Prevent Speed from surpassing maxSpeed
     SwerveDriveKinematics.desaturateWheelSpeeds(currentStates, 12);
