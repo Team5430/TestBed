@@ -4,7 +4,6 @@ import com.kauailabs.navx.frc.AHRS;
 import com.team5430.util.SwerveModuleConstants;
 import com.team5430.util.SwerveModuleGroup;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.SPI.Port;
