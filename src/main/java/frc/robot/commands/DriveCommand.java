@@ -1,12 +1,14 @@
 package frc.robot.commands;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
-import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrain;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.TestBed;
 
 public class DriveCommand extends Command {
@@ -19,14 +21,15 @@ public class DriveCommand extends Command {
      rTranslation,
      ThrottleBreaker;
 
-    boolean FIELD_CENTRIC;
+    BooleanSupplier DRIVE_STYLE;
     
 
-    public DriveCommand(DoubleSupplier X, DoubleSupplier Y, DoubleSupplier Rotation, DoubleSupplier breaking, TestBed subsystem){
+    public DriveCommand(DoubleSupplier X, DoubleSupplier Y, DoubleSupplier Rotation, DoubleSupplier breaking, Trigger DriveStyle, TestBed subsystem){
         xTranslation = X;
         yTranslation = Y;
         rTranslation = Rotation;
         ThrottleBreaker = breaking;
+        DRIVE_STYLE = DriveStyle;
         mTestBed = subsystem;
         addRequirements(subsystem);
     }
@@ -41,25 +44,20 @@ public class DriveCommand extends Command {
         double rotation = rTranslation.getAsDouble();
         double breaking = ThrottleBreaker.getAsDouble();
 
-        ChassisSpeeds Inputs = new ChassisSpeeds(
-                      MathUtil.applyDeadband(x, .3) * breaking,
-                      MathUtil.applyDeadband(y, .3) * breaking,
-                     MathUtil.applyDeadband(rotation, .3));
+        boolean DriveStyleToggle = DRIVE_STYLE.getAsBoolean();
+        Rotation2d RobotAngle = mTestBed.mGyro.getRotation2d();
 
-    if(FIELD_CENTRIC){
-        mTestBed.request(
-            new ChassisSpeeds(x, y, rotation)
-            );
-        }else{
-        mTestBed.request(
-            ChassisSpeeds.fromFieldRelativeSpeeds(Inputs, null)
-           );
-        }
+        ChassisSpeeds Inputs = new ChassisSpeeds(
+                      x * breaking,
+                      y * breaking,
+                     rotation);
+
+    mTestBed.Drive(Inputs, RobotAngle, DriveStyleToggle);
     }
 
     @Override
     public void end(boolean interupted){
-
+        
     }
 
     @Override

@@ -3,6 +3,8 @@ package com.team5430.util;
 
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.BuiltInAccelerometer;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import java.util.function.BooleanSupplier;
 
 public class CollisionDetection {
@@ -27,6 +29,7 @@ public class CollisionDetection {
   // use if needed for triggers
   public BooleanSupplier getDetection = this::CollisionDetected;
 
+  
   public boolean CollisionDetected() {
     // calculate jerk and see utilise any spikes too come out as true
     double LinearXAccel = accelerometer.getX();
@@ -43,4 +46,9 @@ public class CollisionDetection {
     return (Math.abs(filteredXJerk) > CollisionThreshold)
         || (Math.abs(filteredYJerk) > CollisionThreshold);
   }
+
+  public Trigger DetectionTrigger(){
+    return new Trigger(getDetection);
+  }
+
 }

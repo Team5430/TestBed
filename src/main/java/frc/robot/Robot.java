@@ -35,7 +35,11 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    // m_TestBed.angle(90, 30);
+
+    var m_Auto = m_robotContainer.getAutonomousCommand();
+
+    m_Auto.execute();
+    
   }
 
   @Override

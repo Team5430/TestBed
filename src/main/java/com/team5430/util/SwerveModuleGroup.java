@@ -1,22 +1,34 @@
 package com.team5430.util;
 
+
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
 
 
-public class SwerveModuleGroup implements Sendable {
+
+public class SwerveModuleGroup  {
 
 //max is 4 swerve modules; accounted for array
   private SwerveModule[] swerveModules =  new SwerveModule[4];
   private int moduleCount;
 
   private static SwerveDriveKinematics m_Kinematics;
+  private static SwerveModuleState[] m_states;
+
+  private final StructArrayPublisher<SwerveModuleState> publisher;
+
+  public enum DriveStyle {
+    FIELD_CENTRIC,
+    RELATIVE
+  }
+
 
   
 /**
@@ -52,12 +64,16 @@ moduleCount = ModuleCount;
     }
     //set Kinematics
     m_Kinematics = config.Kinematics;
+
+        // Start publishing an array of module states with the "/SwerveStates" key
+    publisher = NetworkTableInstance.getDefault()
+      .getStructArrayTopic("/SwerveStates", SwerveModuleState.struct).publish();
+
+
     
 //**next step! */    SwerveDrivePoseEstimator t = new SwerveDrivePoseEstimator(m_Kinematics, null, null, null)
   }
    
-    
-  
    /** The bigger the input, smaller the output; meant to mimic breaking in a car */  
    public double VariableSpeedDecline(double input) {
     return 1 - input;
@@ -78,19 +94,30 @@ moduleCount = ModuleCount;
     }
 
   }
-
+  
   public void Drive(ChassisSpeeds speeds){
     SwerveModuleState states[] = m_Kinematics.toSwerveModuleStates(speeds);
     SetStates(states);
+    m_states = states;
+  }
+
+  public void FieldCentricDrive(ChassisSpeeds speeds, Rotation2d robotAngle){
+    Drive(
+      ChassisSpeeds.fromFieldRelativeSpeeds(speeds, robotAngle)
+    );
+  }
+/**STOP!! */
+  public void Stop(){
+
+    for(SwerveModule s : swerveModules){
+      s.Stop();
+    }
+
   }
 
   
-  //Dashboard sendoff
-  @Override
-  public void initSendable(SendableBuilder builder) {
-for(SwerveModule s : swerveModules){
-  s.initSendable(builder);
+  public void publishData() {
+      publisher.set(m_states);
     }
   }
 
-}

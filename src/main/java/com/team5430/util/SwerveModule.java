@@ -106,12 +106,15 @@ public class SwerveModule implements Sendable {
       var currrentAngle = optimize.angle;
       angleMotor.setControl(new PositionDutyCycle(wantedAngle/(2*Math.PI)));
       //-Math.abs(((wantedAngle - 270)/360))));
-      //Throttle
+      //Throttle; cosine compensation
         optimize.speedMetersPerSecond *= optimize.angle.minus(currrentAngle).getCos();  
         double wantedVelocity = optimize.speedMetersPerSecond;
         driveMotor.setControl(new VelocityDutyCycle(wantedVelocity));
   }
 
+  public SwerveModulePosition getState(){
+    return internalState;
+  }
     /**
      * SwerveModulePosition is an object which contains the modules position and modules angle
      * @return The current position of the module

@@ -7,6 +7,7 @@ public class SwerveModuleConstants {
 
   public SwerveModuleConstants() {}
 
+//all arrays follow the order of A = 0, B = 1, C = 2, D = 3
   public double[] STEERING_MODULE_OFFSET ={
     0.431,
     0.15,

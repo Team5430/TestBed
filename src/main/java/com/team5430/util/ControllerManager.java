@@ -1,0 +1,91 @@
+package com.team5430.util;
+
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+public class ControllerManager {
+
+
+    CommandJoystick DriverJoystick;
+    CustomXboxController coPilotController;
+    double axisThreshold = .3;
+
+//init controllers
+    private ControllerManager(){
+        DriverJoystick = new CommandJoystick(0);
+        coPilotController = new CustomXboxController(1);
+    }
+
+//Driver Controls
+    public double getX(){
+        return MathUtil.applyDeadband(DriverJoystick.getX(), axisThreshold);
+    }
+
+    public double getY(){
+        return MathUtil.applyDeadband(DriverJoystick.getY(), axisThreshold);
+    }
+
+    public double getRotation(){
+        return MathUtil.applyDeadband(DriverJoystick.getRawAxis(2), axisThreshold);
+    }
+
+    public double getThrottleSwitch(){
+        return DriverJoystick.getRawAxis(3);
+    }
+
+    public Trigger quickTrigger(){
+        return DriverJoystick.button(1);
+    }
+
+//CoPilot Controls
+    public Trigger A(){
+        return coPilotController.a();
+    }
+
+    public Trigger B(){
+        return coPilotController.b();
+    }
+
+    public Trigger X(){
+        return coPilotController.x();
+    }
+
+    public Trigger Y(){
+        return coPilotController.y();
+    }
+    
+    public Trigger LeftBumper(){
+        return coPilotController.leftBumper();
+    }
+
+    public Trigger RightBumper(){
+        return coPilotController.rightBumper();
+    }
+
+    public Trigger LeftTrigger(){
+        return coPilotController.leftTrigger();
+    }
+
+    public Trigger RightTrigger(){
+        return coPilotController.rightTrigger();
+    }
+
+    public Trigger PovUp(){
+        return coPilotController.povUp();
+    }
+
+    public Trigger PovDown(){
+        return coPilotController.povDown();
+    }
+    
+    public Trigger PovLeft(){
+        return coPilotController.povLeft();
+    }
+
+    public Trigger PovRight(){
+        return coPilotController.povRight();
+    }
+}
+
