@@ -1,5 +1,7 @@
 package com.team5430.util;
 
+import com.kauailabs.navx.frc.AHRS;
+
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -43,20 +45,21 @@ public class SwerveModuleGroup implements Sendable {
 
 moduleCount = ModuleCount;
 
+
     for(int i= 0; i < moduleCount; i++){
       swerveModules[i] = new SwerveModule(i * 2, i * 2 + 1, i, config.STEERING_MODULE_OFFSET[i]);
       swerveModules[i].invertThrottle(config.MOTOR_INVERT[i]);
     }
     //set Kinematics
     m_Kinematics = config.Kinematics;
-
+    
 //**next step! */    SwerveDrivePoseEstimator t = new SwerveDrivePoseEstimator(m_Kinematics, null, null, null)
   }
    
-
+    
   
-   /** The bigger the input, smaller the output; meant to mimic breaking in a car */
-   public double VariableSpeedDecline(Double input) {
+   /** The bigger the input, smaller the output; meant to mimic breaking in a car */  
+   public double VariableSpeedDecline(double input) {
     return 1 - input;
   }
 
@@ -81,6 +84,7 @@ moduleCount = ModuleCount;
     SetStates(states);
   }
 
+  
   //Dashboard sendoff
   @Override
   public void initSendable(SendableBuilder builder) {

@@ -35,15 +35,16 @@ public class RobotContainer {
             m_TestBed));
   }
 
+  
+
   // contorller bindings here
   private void configureBindings() {
 
-    /*
-    Trigger controllerVibration = new Trigger(m_TestBed.mfeedback::CollisionDetected);
+    
+    Trigger FIELD_CENTRIC_TOGGLE = new Trigger(driverJoystick.povUp());
 
-    controllerVibration.onTrue(new InstantCommand(() -> driverJoystick.setRumble(true)));
-    controllerVibration.onFalse(new InstantCommand(() -> driverJoystick.setRumble(false)));
-  */
+    
+  
 }
   public Command getAutonomousCommand() {
     return Commands.sequence(new InstantCommand(() -> m_TestBed.DriveTrain.DriveToDistance(30), m_TestBed));

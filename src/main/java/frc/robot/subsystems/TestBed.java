@@ -1,7 +1,7 @@
 package frc.robot.subsystems;
 
-import com.team5430.util.SwerveModuleConstants;
 import com.kauailabs.navx.frc.AHRS;
+import com.team5430.util.SwerveModuleConstants;
 import com.team5430.util.SwerveModuleGroup;
 
 import edu.wpi.first.math.MathUtil;
@@ -9,7 +9,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotContainer;
 
 public class TestBed extends SubsystemBase {
 
@@ -30,19 +29,27 @@ public class TestBed extends SubsystemBase {
 
   public double lastAngle = 0;
 
+  public boolean FIElD_CENTRIC;
+
   public void publishData() {
     SmartDashboard.putData("DriveTrain", DriveTrain);
     SmartDashboard.putData("Gyroscope", gyro);
 
   }
-
+  
 
   // setAngle will set the directional angle
   public void drive(double x, double y, double rotation,  double breaking) {
-    DriveTrain.Drive(new ChassisSpeeds(
+
+    ChassisSpeeds Inputs = new ChassisSpeeds(
                       MathUtil.applyDeadband(x, .3) * breaking,
                       MathUtil.applyDeadband(y, .3) * breaking,
-                     MathUtil.applyDeadband(rotation, .3)));
+                     MathUtil.applyDeadband(rotation, .3));
+        if(FIElD_CENTRIC){
+      DriveTrain.Drive(ChassisSpeeds.fromFieldRelativeSpeeds(Inputs, gyro.getRotation2d()));
+        }else{
+      DriveTrain.Drive(Inputs);
+      }
   }
 
   // **the wheel will go to the position that is greater than 0.2, otherwise stop power when less

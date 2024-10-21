@@ -103,10 +103,12 @@ public class SwerveModule implements Sendable {
 
     var optimize =  SwerveModuleState.optimize(state, internalState.angle);
     //Heading
-      double wantedAngle = optimize.angle.getDegrees();
-      angleMotor.setControl(new PositionDutyCycle(wantedAngle/360));
+      double wantedAngle = optimize.angle.getRadians();
+      var currrentAngle = optimize.angle;
+      angleMotor.setControl(new PositionDutyCycle(wantedAngle/(2*Math.PI)));
       //-Math.abs(((wantedAngle - 270)/360))));
       //Throttle
+        optimize.speedMetersPerSecond *= optimize.angle.minus(currrentAngle).getCos();  
         double wantedVelocity = optimize.speedMetersPerSecond;
         driveMotor.setControl(new VelocityDutyCycle(wantedVelocity));
   }
@@ -144,7 +146,7 @@ public class SwerveModule implements Sendable {
     driveMotor.stopMotor();
   }
 
- 
+      
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Swerve Module Telemetry");
