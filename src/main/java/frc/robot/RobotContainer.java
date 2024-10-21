@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import com.team5430.util.CustomXboxController;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -12,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.DriveCommand;
 import frc.robot.subsystems.TestBed;
 
 public class RobotContainer {
@@ -24,15 +26,7 @@ public class RobotContainer {
     // apply set bindings
     configureBindings();
     // set default command for driver control
-    m_TestBed.setDefaultCommand(
-        new RunCommand(
-            () ->
-                m_TestBed.drive(
-                    driverJoystick.getX(),
-                    driverJoystick.getY(),
-                    driverJoystick.getRawAxis(2),
-                    driverJoystick.getRawAxis(3)),
-            m_TestBed));
+ 
   }
 
   

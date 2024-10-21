@@ -29,7 +29,6 @@ public class TestBed extends SubsystemBase {
 
   public double lastAngle = 0;
 
-  public boolean FIElD_CENTRIC;
 
   public void publishData() {
     SmartDashboard.putData("DriveTrain", DriveTrain);
@@ -39,17 +38,10 @@ public class TestBed extends SubsystemBase {
   
 
   // setAngle will set the directional angle
-  public void drive(double x, double y, double rotation,  double breaking) {
+  public void request(ChassisSpeeds input) {
 
-    ChassisSpeeds Inputs = new ChassisSpeeds(
-                      MathUtil.applyDeadband(x, .3) * breaking,
-                      MathUtil.applyDeadband(y, .3) * breaking,
-                     MathUtil.applyDeadband(rotation, .3));
-        if(FIElD_CENTRIC){
-      DriveTrain.Drive(ChassisSpeeds.fromFieldRelativeSpeeds(Inputs, gyro.getRotation2d()));
-        }else{
-      DriveTrain.Drive(Inputs);
-      }
+  DriveTrain.Drive(input);
+  
   }
 
   // **the wheel will go to the position that is greater than 0.2, otherwise stop power when less
