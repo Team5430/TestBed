@@ -1,12 +1,9 @@
 package com.team5430.util;
 
-
-import com.kauailabs.navx.frc.AHRS;
-
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
@@ -74,17 +71,15 @@ moduleCount = ModuleCount;
     
 //**next step! */    SwerveDrivePoseEstimator t = new SwerveDrivePoseEstimator(m_Kinematics, null, null, null)
   }
-   
-   /** The bigger the input, smaller the output; meant to mimic breaking in a car */  
-   public double VariableSpeedDecline(double input) {
-    return 1 - input;
-  }
 
+  /**quick auton attempt, nothing special */
   public void DriveToDistance(double distance){
     for(int i = 0; i < moduleCount; i++){
       swerveModules[i].DriveToDistance(distance);
     }
   }
+
+  /**Set Module States to desired state */
   public void SetStates(SwerveModuleState... currentStates){  
   //Prevent Speed from surpassing maxSpeed
     SwerveDriveKinematics.desaturateWheelSpeeds(currentStates, 12);
@@ -96,26 +91,59 @@ moduleCount = ModuleCount;
 
   }
   
-  public void Drive(ChassisSpeeds speeds){
+  /**forward is relative to the robots forward, classic */
+  public void RobotRelativeDrive(ChassisSpeeds speeds){
     SwerveModuleState states[] = m_Kinematics.toSwerveModuleStates(speeds);
     SetStates(states);
-    m_states = states;
   }
 
+  /**drive with a gyroscope to keep heading to field */
   public void FieldCentricDrive(ChassisSpeeds speeds, Rotation2d robotAngle){
-    Drive(
+    RobotRelativeDrive(
       ChassisSpeeds.fromFieldRelativeSpeeds(speeds, robotAngle)
     );
   }
+
+/**@return the angle anf velocity of the robot */
+  public ChassisSpeeds getCurrentSpeeds(){
+    
+    var currentSpeeds = m_Kinematics.toChassisSpeeds(getStates(true));
+    return currentSpeeds;
+  }
+
+
+
 /**STOP!! */
   public void Stop(){
 
     for(SwerveModule s : swerveModules){
       s.Stop();
     }
+  }
+
+  //distance and angle
+  public SwerveModulePosition[] getPositions(boolean refresh){
+  
+    return new SwerveModulePosition[]{
+      swerveModules[0].getPosition(refresh),
+      swerveModules[1].getPosition(refresh),
+      swerveModules[2].getPosition(refresh),
+      swerveModules[3].getPosition(refresh),
+    };
 
   }
 
+  //velocity and angle
+  public SwerveModuleState[] getStates(boolean refresh){
+
+    return new SwerveModuleState[]{
+      swerveModules[0].getState(refresh),
+      swerveModules[1].getState(refresh),
+      swerveModules[2].getState(refresh),
+      swerveModules[3].getState(refresh),
+    };
+
+  }
   
   public void publishData() {
       publisher.set(m_states);

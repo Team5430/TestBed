@@ -29,8 +29,8 @@ public class SwerveModule implements Sendable {
   private double driveRatio = 8.14;
   public double currentHeading;
   public double currentThrottle;
-  private SwerveModulePosition internalState = new SwerveModulePosition();
-
+  private SwerveModulePosition internalPosition = new SwerveModulePosition();
+  private SwerveModuleState interalState = new SwerveModuleState();
   
     private StatusSignal<Double> drivePosition;
     private StatusSignal<Double> driveVelocity;
@@ -102,22 +102,19 @@ public class SwerveModule implements Sendable {
 
   public void setState(SwerveModuleState state){
 
-    var optimize =  SwerveModuleState.optimize(state, internalState.angle);
+    var optimize =  SwerveModuleState.optimize(state, new Rotation2d(CANCoder.getPosition().getValue()));
     //Heading
       double wantedAngle = optimize.angle.getDegrees();
       SmartDashboard.putNumber("Angle", wantedAngle);
       var currrentAngle = optimize.angle;
       angleMotor.setControl(new PositionDutyCycle(wantedAngle/360));
-      //-Math.abs(((wantedAngle - 270)/360))));
       //Throttle; cosine compensation
         optimize.speedMetersPerSecond *= optimize.angle.minus(currrentAngle).getCos();  
         double wantedVelocity = optimize.speedMetersPerSecond;
         driveMotor.setControl(new VelocityDutyCycle(wantedVelocity));
   }
 
-  public SwerveModulePosition getState(){
-    return internalState;
-  }
+ 
     /**
      * SwerveModulePosition is an object which contains the modules position and modules angle
      * @return The current position of the module
@@ -134,11 +131,25 @@ public class SwerveModule implements Sendable {
         double angleRotations = BaseStatusSignal.getLatencyCompensatedValue(anglePosition, angleVelocity);
 
         double distance = driveRotations; 
-        internalState.distanceMeters = distance;
+        internalPosition.distanceMeters = distance;
         Rotation2d angle = Rotation2d.fromRotations(angleRotations);
-        internalState.angle = angle;
+        internalPosition.angle = angle;
         
-        return internalState;
+        
+        return internalPosition;
+    }
+
+    public SwerveModuleState getState(boolean refresh){
+      
+      if (refresh) {
+        driveVelocity.refresh();
+        anglePosition.refresh();
+      }
+
+      interalState.angle = Rotation2d.fromDegrees(anglePosition.getValue());
+      interalState.speedMetersPerSecond = driveVelocity.getValue();
+
+      return interalState;
     }
 
 

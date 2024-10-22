@@ -1,8 +1,8 @@
 package frc.robot.commands;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
+import com.team5430.util.MathHelpers;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -19,7 +19,7 @@ public class DriveCommand extends Command {
      rTranslation,
      ThrottleBreaker;
 
-    Boolean DRIVE_STYLE = false;
+    Boolean FIELD_CENTRIC = false;
     
 
     public DriveCommand(DoubleSupplier X, DoubleSupplier Y, DoubleSupplier Rotation, DoubleSupplier breaking, TestBed subsystem){
@@ -39,9 +39,9 @@ public class DriveCommand extends Command {
         double x = xTranslation.getAsDouble();
         double y = yTranslation.getAsDouble();
         double rotation = rTranslation.getAsDouble();
-        double breaking = ThrottleBreaker.getAsDouble();
+        double breaking = MathHelpers.VariableSpeedDecline(ThrottleBreaker.getAsDouble());
 
-        boolean DriveStyleToggle = DRIVE_STYLE;
+        boolean DriveStyleToggle = FIELD_CENTRIC;
         Rotation2d RobotAngle = mTestBed.mGyro.getRotation2d();
 
         ChassisSpeeds Inputs = new ChassisSpeeds(
