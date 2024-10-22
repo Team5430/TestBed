@@ -12,7 +12,7 @@ public class SwerveModuleConstants {
     0.431,
     0.15,
     .03,
-    0
+  .0319
   };
 
   public boolean[] MOTOR_INVERT = {

@@ -1,5 +1,6 @@
 
 package com.team5430.util;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -17,6 +18,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveModule implements Sendable {
 
@@ -102,9 +104,10 @@ public class SwerveModule implements Sendable {
 
     var optimize =  SwerveModuleState.optimize(state, internalState.angle);
     //Heading
-      double wantedAngle = optimize.angle.getRadians();
+      double wantedAngle = optimize.angle.getDegrees();
+      SmartDashboard.putNumber("Angle", wantedAngle);
       var currrentAngle = optimize.angle;
-      angleMotor.setControl(new PositionDutyCycle(wantedAngle/(2*Math.PI)));
+      angleMotor.setControl(new PositionDutyCycle(wantedAngle/360));
       //-Math.abs(((wantedAngle - 270)/360))));
       //Throttle; cosine compensation
         optimize.speedMetersPerSecond *= optimize.angle.minus(currrentAngle).getCos();  

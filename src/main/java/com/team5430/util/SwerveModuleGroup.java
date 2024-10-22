@@ -21,6 +21,7 @@ public class SwerveModuleGroup  {
 
   private static SwerveDriveKinematics m_Kinematics;
   private static SwerveModuleState[] m_states;
+  
 
   private final StructArrayPublisher<SwerveModuleState> publisher;
 

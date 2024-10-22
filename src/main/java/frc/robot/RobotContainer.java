@@ -17,7 +17,7 @@ public class RobotContainer {
   // init subsystem
   private TestBed m_TestBed = new TestBed();
 
-  private ControllerManager mControllerManager;
+  private ControllerManager mControllerManager = new ControllerManager();
   
   public RobotContainer() {
   
@@ -29,7 +29,6 @@ public class RobotContainer {
        mControllerManager::getY,
        mControllerManager::getRotation,
       mControllerManager::getThrottleSwitch,
-      mControllerManager.quickTrigger(),
        m_TestBed));
 
     configureBindings();

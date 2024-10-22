@@ -2,6 +2,7 @@ package com.team5430.util;
 
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -11,24 +12,29 @@ public class ControllerManager {
     CommandJoystick DriverJoystick;
     CustomXboxController coPilotController;
     double axisThreshold = .3;
+    double mRate = 25;
+
+    SlewRateLimiter Xoptimize = new SlewRateLimiter(mRate);
+    SlewRateLimiter Yoptimize = new SlewRateLimiter(mRate);
+    SlewRateLimiter Roptimize = new SlewRateLimiter(mRate);
 
 //init controllers
-    private ControllerManager(){
+    public ControllerManager(){
         DriverJoystick = new CommandJoystick(0);
         coPilotController = new CustomXboxController(1);
     }
 
 //Driver Controls
     public double getX(){
-        return MathUtil.applyDeadband(DriverJoystick.getX(), axisThreshold);
+        return MathUtil.applyDeadband(Xoptimize.calculate(DriverJoystick.getX()), axisThreshold);
     }
 
     public double getY(){
-        return MathUtil.applyDeadband(DriverJoystick.getY(), axisThreshold);
+        return MathUtil.applyDeadband(Yoptimize.calculate(DriverJoystick.getY()), axisThreshold);
     }
 
     public double getRotation(){
-        return MathUtil.applyDeadband(DriverJoystick.getRawAxis(2), axisThreshold);
+        return MathUtil.applyDeadband(Roptimize.calculate(DriverJoystick.getRawAxis(2)), .6);
     }
 
     public double getThrottleSwitch(){
