@@ -5,6 +5,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -102,16 +103,17 @@ public class SwerveModule implements Sendable {
 
   public void setState(SwerveModuleState state){
 
-    var optimize =  SwerveModuleState.optimize(state, new Rotation2d(CANCoder.getPosition().getValue()));
+    state =  SwerveModuleState.optimize(state, getState(true).angle);
     //Heading
-      double wantedAngle = optimize.angle.getDegrees();
-      SmartDashboard.putNumber("Angle", wantedAngle);
-      var currrentAngle = optimize.angle;
-      angleMotor.setControl(new PositionDutyCycle(wantedAngle/360));
+      double wantedRad = state.angle.getRadians();
+      SmartDashboard.putNumber("Angle", wantedRad);
+      angleMotor.setControl(new PositionDutyCycle(wantedRad/(2*Math.PI)));
       //Throttle; cosine compensation
-        optimize.speedMetersPerSecond *= optimize.angle.minus(currrentAngle).getCos();  
-        double wantedVelocity = optimize.speedMetersPerSecond;
+        var currrentAngle = state.angle;
+        state.speedMetersPerSecond *= state.angle.minus(currrentAngle).getCos();  
+        double wantedVelocity = state.speedMetersPerSecond;
         driveMotor.setControl(new VelocityDutyCycle(wantedVelocity));
+
   }
 
  

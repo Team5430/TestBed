@@ -48,6 +48,10 @@ private final StructPublisher<Rotation2d> publisher;
 
   }
   
+  public void ResetHeading(){
+    mGyro.reset();
+  }
+
   public Pose2d getPose(){
     return m_Odometry.getPoseMeters();
   }
