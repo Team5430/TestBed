@@ -1,11 +1,9 @@
-
 package com.team5430.util;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -13,47 +11,50 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveModule implements Sendable {
 
   private TalonFX angleMotor;
   private TalonFX driveMotor;
-  private CANcoder CANCoder; 
+  private CANcoder CANCoder;
   private double angleRatio = 1;
   private double driveRatio = 8.14;
   public double currentHeading;
   public double currentThrottle;
   private SwerveModulePosition internalPosition = new SwerveModulePosition();
   private SwerveModuleState interalState = new SwerveModuleState();
-  
-    private StatusSignal<Double> drivePosition;
-    private StatusSignal<Double> driveVelocity;
-    private StatusSignal<Double> anglePosition;
-    private StatusSignal<Double> angleVelocity;
-    private BaseStatusSignal[] signals;
+
+  private StatusSignal<Double> drivePosition;
+  private StatusSignal<Double> driveVelocity;
+  private StatusSignal<Double> anglePosition;
+  private StatusSignal<Double> angleVelocity;
+  private BaseStatusSignal[] signals;
 
   private double angle_kP = 0.95;
   private double drive_kP = .15;
   private double magEncoderOffset;
 
-  public SwerveModule(){}
-  
+  public SwerveModule() {}
+
   public SwerveModule(int AngleMotorCANid, int DriveMotorCANid, int CANCoderCANid, double offset) {
     angleMotor = new TalonFX(AngleMotorCANid);
     driveMotor = new TalonFX(DriveMotorCANid);
-     CANCoder = new CANcoder(CANCoderCANid);
+    CANCoder = new CANcoder(CANCoderCANid);
 
-     magEncoderOffset = offset;
+    magEncoderOffset = offset;
     motorConfig();
-  
-  //data as statusSignals
+
+    drivePosition  = driveMotor.getPosition();
+    driveVelocity = driveMotor.getVelocity();
+    anglePosition = angleMotor.getPosition();
+    angleVelocity   = angleMotor.getVelocity();
+    
+    // data as statusSignals
     signals = new BaseStatusSignal[4];
     signals[0] = drivePosition;
     signals[1] = driveVelocity;
@@ -61,23 +62,24 @@ public class SwerveModule implements Sendable {
     signals[3] = angleVelocity;
   }
 
-  public void DriveToDistance(double distance){
+  public void DriveToDistance(double distance) {
     angleMotor.setControl(new PositionDutyCycle(0));
     driveMotor.setControl(new PositionDutyCycle(distance));
   }
+
   private void motorConfig() {
     // create config objects
     TalonFXConfiguration angleConfig = new TalonFXConfiguration();
     TalonFXConfiguration driveConfig = new TalonFXConfiguration();
     CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
-    
+
     angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
     // gear ratio
     angleConfig.Feedback.SensorToMechanismRatio = angleRatio;
     // proportional gains
     angleConfig.Slot0.kP = angle_kP;
     driveConfig.Slot0.kP = drive_kP;
-    
+
     driveConfig.Feedback.SensorToMechanismRatio = driveRatio;
 
     encoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
@@ -87,8 +89,6 @@ public class SwerveModule implements Sendable {
     angleConfig.Feedback.FeedbackRemoteSensorID = CANCoder.getDeviceID();
     angleConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
 
-
-
     // apply configurations
     angleMotor.getConfigurator().apply(angleConfig);
     driveMotor.getConfigurator().apply(driveConfig);
@@ -97,74 +97,77 @@ public class SwerveModule implements Sendable {
     // zero encoders
 
     angleMotor.setPosition(magEncoderOffset);
-   }
-
-  
-
-  public void setState(SwerveModuleState state){
-
-    state =  SwerveModuleState.optimize(state, getState(true).angle);
-    //Heading
-      double wantedRad = state.angle.getRadians();
-      SmartDashboard.putNumber("Angle", wantedRad);
-      angleMotor.setControl(new PositionDutyCycle(wantedRad/(2*Math.PI)));
-      //Throttle; cosine compensation
-        var currrentAngle = state.angle;
-        state.speedMetersPerSecond *= state.angle.minus(currrentAngle).getCos();  
-        double wantedVelocity = state.speedMetersPerSecond;
-        driveMotor.setControl(new VelocityDutyCycle(wantedVelocity));
-
   }
 
- 
-    /**
-     * SwerveModulePosition is an object which contains the modules position and modules angle
-     * @return The current position of the module
-     */
-    public SwerveModulePosition getPosition(boolean refresh) {
-        if(refresh) {
-            drivePosition.refresh();
-            driveVelocity.refresh();
-            anglePosition.refresh();
-            angleVelocity.refresh();
-        }
-        
-        double driveRotations = BaseStatusSignal.getLatencyCompensatedValue(drivePosition, driveVelocity);
-        double angleRotations = BaseStatusSignal.getLatencyCompensatedValue(anglePosition, angleVelocity);
+  public void setState(SwerveModuleState state) {
 
-        double distance = driveRotations; 
-        internalPosition.distanceMeters = distance;
-        Rotation2d angle = Rotation2d.fromRotations(angleRotations);
-        internalPosition.angle = angle;
-        
-        
-        return internalPosition;
+    state = SwerveModuleState.optimize(state, getState(true).angle);
+  // Heading
+    double wantedRad = state.angle.getRadians();
+  // flip wanted to closest direction if needed
+    wantedRad = MathHelpers.WrapRad(wantedRad, getState(true).angle.getRadians());
+
+    // SmartDashboard.putNumber("Angle", wantedRad);
+
+    angleMotor.setControl(new PositionDutyCycle(wantedRad / (2 * Math.PI)));
+
+  // Throttle; cosine compensation
+    var currrentAngle = state.angle;
+    state.speedMetersPerSecond *= state.angle.minus(currrentAngle).getCos();
+  // get wanted
+    double wantedVelocity = state.speedMetersPerSecond;
+    driveMotor.setControl(new VelocityDutyCycle(wantedVelocity));
+  }
+
+  /**
+   * SwerveModulePosition is an object which contains the modules position and modules angle
+   *
+   * @return The current position of the module
+   */
+  public SwerveModulePosition getPosition(boolean refresh) {
+    if (refresh) {
+      drivePosition.refresh();
+      driveVelocity.refresh();
+      anglePosition.refresh();
+      angleVelocity.refresh();
     }
 
-    public SwerveModuleState getState(boolean refresh){
-      
-      if (refresh) {
-        driveVelocity.refresh();
-        anglePosition.refresh();
-      }
+    double driveRotations =
+        BaseStatusSignal.getLatencyCompensatedValue(drivePosition, driveVelocity);
+    double angleRotations =
+        BaseStatusSignal.getLatencyCompensatedValue(anglePosition, angleVelocity);
 
-      interalState.angle = Rotation2d.fromDegrees(anglePosition.getValue());
-      interalState.speedMetersPerSecond = driveVelocity.getValue();
+    double distance = driveRotations;
+    internalPosition.distanceMeters = distance;
+    Rotation2d angle = Rotation2d.fromRotations(angleRotations);
+    internalPosition.angle = angle;
 
-      return interalState;
+    return internalPosition;
+  }
+
+  public SwerveModuleState getState(boolean refresh) {
+
+    if (refresh) {
+      driveVelocity.refresh();
+      anglePosition.refresh();
     }
 
+    interalState.angle = Rotation2d.fromDegrees(anglePosition.getValue());
+    interalState.speedMetersPerSecond = driveVelocity.getValue();
 
-    public void invertThrottle(boolean input){
-      
-      driveMotor.setInverted(input);
-    }
-  public void Stop() { 
+    return interalState;
+  }
+
+  public void invertThrottle(boolean input) {
+
+    driveMotor.setInverted(input);
+  }
+
+  public void Stop() {
     angleMotor.stopMotor();
     driveMotor.stopMotor();
   }
 
-      
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Swerve Module Telemetry");
@@ -172,6 +175,4 @@ public class SwerveModule implements Sendable {
     builder.setSafeState(this::Stop);
     builder.addDoubleProperty("Drive Motor Power", null, null);
   }
-
-  
 }
