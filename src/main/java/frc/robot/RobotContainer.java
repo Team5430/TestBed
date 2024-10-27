@@ -33,8 +33,8 @@ public class RobotContainer {
     // setup drive
     m_Drive.setDefaultCommand(
         new DriveCommand(
-            mControllerManager::getX,
             mControllerManager::getY,
+            mControllerManager::getX,
             mControllerManager::getRotation,
             mControllerManager::getThrottleSwitch,
             m_Drive));
@@ -50,6 +50,9 @@ public class RobotContainer {
         .LeftBumper()
         .onTrue(new InstantCommand(m_HangSub::Down))
         .onFalse(new InstantCommand(m_HangSub::Stop));
+        // Allows zero gyro during run time//
+    mControllerManager.B().onTrue(new InstantCommand(m_Drive.mGyro::zeroYaw));
+
   }
 
   public Command getAutonomousCommand() {

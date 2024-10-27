@@ -10,7 +10,7 @@ public class ControllerManager {
   CommandJoystick DriverJoystick;
   CustomXboxController coPilotController;
   double axisThreshold = .3;
-  double mRate = 25;
+  double mRate = 100;
 
   SlewRateLimiter Xoptimize = new SlewRateLimiter(mRate);
   SlewRateLimiter Yoptimize = new SlewRateLimiter(mRate);

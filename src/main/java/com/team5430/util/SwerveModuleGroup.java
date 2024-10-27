@@ -15,9 +15,10 @@ public class SwerveModuleGroup {
   private int moduleCount;
 
   private static SwerveDriveKinematics m_Kinematics;
-  private static SwerveModuleState[] m_states;
 
-  private final StructArrayPublisher<SwerveModuleState> publisher;
+  private final StructArrayPublisher<SwerveModuleState> StatePublisher;
+
+  private final StructArrayPublisher<SwerveModulePosition> PositionPublisher;
 
   public enum DriveStyle {
     FIELD_CENTRIC,
@@ -58,11 +59,15 @@ public class SwerveModuleGroup {
     m_Kinematics = config.Kinematics;
 
     // Start publishing an array of module states with the "/SwerveStates" key
-    publisher =
+    StatePublisher =
         NetworkTableInstance.getDefault()
             .getStructArrayTopic("/SwerveStates", SwerveModuleState.struct)
             .publish();
-
+    
+    PositionPublisher =
+        NetworkTableInstance.getDefault()
+            .getStructArrayTopic("/SwervePositions",SwerveModulePosition.struct)
+            .publish();
     // **next step! */    SwerveDrivePoseEstimator t = new SwerveDrivePoseEstimator(m_Kinematics,
     // null, null, null)
   }
@@ -77,7 +82,7 @@ public class SwerveModuleGroup {
   /** Set Module States to desired state */
   public void SetStates(SwerveModuleState... currentStates) {
     // Prevent Speed from surpassing maxSpeed
-    SwerveDriveKinematics.desaturateWheelSpeeds(currentStates, 12);
+    SwerveDriveKinematics.desaturateWheelSpeeds(currentStates, 5);
 
     // apply states in a for Loop.
     for (int i = 0; i < moduleCount; i++) {
@@ -136,6 +141,7 @@ public class SwerveModuleGroup {
   }
 
   public void publishData() {
-    publisher.set(m_states);
+    StatePublisher.set(getStates(true));
+    PositionPublisher.set(getPositions(true));
   }
 }

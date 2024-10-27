@@ -5,6 +5,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -28,6 +29,7 @@ public class SwerveModule implements Sendable {
   public double currentThrottle;
   private SwerveModulePosition internalPosition = new SwerveModulePosition();
   private SwerveModuleState interalState = new SwerveModuleState();
+  private PositionVoltage angleControl = new PositionVoltage(0);
 
   private StatusSignal<Double> drivePosition;
   private StatusSignal<Double> driveVelocity;
@@ -53,7 +55,7 @@ public class SwerveModule implements Sendable {
     driveVelocity = driveMotor.getVelocity();
     anglePosition = angleMotor.getPosition();
     angleVelocity   = angleMotor.getVelocity();
-    
+
     // data as statusSignals
     signals = new BaseStatusSignal[4];
     signals[0] = drivePosition;
@@ -80,7 +82,18 @@ public class SwerveModule implements Sendable {
     angleConfig.Slot0.kP = angle_kP;
     driveConfig.Slot0.kP = drive_kP;
 
+    
+//voltage config
+
+  //max amperage
+    driveConfig.CurrentLimits.SupplyCurrentLimit = 30;
+    driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    
+    driveConfig.CurrentLimits.SupplyCurrentThreshold = 0.1;
     driveConfig.Feedback.SensorToMechanismRatio = driveRatio;
+  //max of 10 volts allows
+    driveConfig.Voltage.PeakForwardVoltage = 10;
+    driveConfig.Voltage.PeakReverseVoltage = -10;
 
     encoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
     encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
@@ -100,13 +113,10 @@ public class SwerveModule implements Sendable {
   }
 
   public void setState(SwerveModuleState state) {
-
     state = SwerveModuleState.optimize(state, getState(true).angle);
   // Heading
     double wantedRad = state.angle.getRadians();
   // flip wanted to closest direction if needed
-    wantedRad = MathHelpers.WrapRad(wantedRad, getState(true).angle.getRadians());
-
     // SmartDashboard.putNumber("Angle", wantedRad);
 
     angleMotor.setControl(new PositionDutyCycle(wantedRad / (2 * Math.PI)));

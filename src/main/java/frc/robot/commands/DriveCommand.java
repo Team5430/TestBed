@@ -48,7 +48,7 @@ public class DriveCommand extends Command {
     Rotation2d RobotAngle = mDrive.getRotation2d();
 
   //apply inputts
-    ChassisSpeeds Inputs = new ChassisSpeeds(x * breaking, y * breaking, rotation);
+    ChassisSpeeds Inputs = new ChassisSpeeds(-x * breaking * 5, y * breaking * 5, rotation * 3);
 
   //drive with inputs
     mDrive.Drive(Inputs, RobotAngle, DriveStyleToggle);

@@ -35,6 +35,8 @@ public class Drive extends SubsystemBase {
         NetworkTableInstance.getDefault()
             .getStructTopic("/Rotation2d", Rotation2d.struct)
             .publish();
+
+    ResetHeading();
   }
 
   
