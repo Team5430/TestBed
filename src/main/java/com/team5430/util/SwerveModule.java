@@ -51,10 +51,10 @@ public class SwerveModule implements Sendable {
     magEncoderOffset = offset;
     motorConfig();
 
-    drivePosition  = driveMotor.getPosition();
+    drivePosition = driveMotor.getPosition();
     driveVelocity = driveMotor.getVelocity();
     anglePosition = angleMotor.getPosition();
-    angleVelocity   = angleMotor.getVelocity();
+    angleVelocity = angleMotor.getVelocity();
 
     // data as statusSignals
     signals = new BaseStatusSignal[4];
@@ -82,16 +82,15 @@ public class SwerveModule implements Sendable {
     angleConfig.Slot0.kP = angle_kP;
     driveConfig.Slot0.kP = drive_kP;
 
-    
-//voltage config
+    // voltage config
 
-  //max amperage
+    // max amperage
     driveConfig.CurrentLimits.SupplyCurrentLimit = 30;
     driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-    
+
     driveConfig.CurrentLimits.SupplyCurrentThreshold = 0.1;
     driveConfig.Feedback.SensorToMechanismRatio = driveRatio;
-  //max of 10 volts allows
+    // max of 10 volts allows
     driveConfig.Voltage.PeakForwardVoltage = 10;
     driveConfig.Voltage.PeakReverseVoltage = -10;
 
@@ -114,17 +113,17 @@ public class SwerveModule implements Sendable {
 
   public void setState(SwerveModuleState state) {
     state = SwerveModuleState.optimize(state, getState(true).angle);
-  // Heading
+    // Heading
     double wantedRad = state.angle.getRadians();
-  // flip wanted to closest direction if needed
+    // flip wanted to closest direction if needed
     // SmartDashboard.putNumber("Angle", wantedRad);
 
     angleMotor.setControl(new PositionDutyCycle(wantedRad / (2 * Math.PI)));
 
-  // Throttle; cosine compensation
+    // Throttle; cosine compensation
     var currrentAngle = state.angle;
     state.speedMetersPerSecond *= state.angle.minus(currrentAngle).getCos();
-  // get wanted
+    // get wanted
     double wantedVelocity = state.speedMetersPerSecond;
     driveMotor.setControl(new VelocityDutyCycle(wantedVelocity));
   }

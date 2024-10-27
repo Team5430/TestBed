@@ -21,13 +21,13 @@ public class DriveCommand extends Command {
       DoubleSupplier Rotation,
       DoubleSupplier breaking,
       Drive subsystem) {
-  //get inputs
+    // get inputs
     xTranslation = X;
     yTranslation = Y;
     rTranslation = Rotation;
     ThrottleBreaker = breaking;
     mDrive = subsystem;
-  // require Drive subsystem
+    // require Drive subsystem
     addRequirements(subsystem);
   }
 
@@ -36,21 +36,21 @@ public class DriveCommand extends Command {
 
   @Override
   public void execute() {
-    
-  //get inputs
+
+    // get inputs
     double x = xTranslation.getAsDouble();
     double y = yTranslation.getAsDouble();
     double rotation = rTranslation.getAsDouble();
     double breaking = MathHelpers.VariableSpeedDecline(ThrottleBreaker.getAsDouble());
 
-  //setup for type of drivestyle
+    // setup for type of drivestyle
     boolean DriveStyleToggle = FIELD_CENTRIC;
     Rotation2d RobotAngle = mDrive.getRotation2d();
 
-  //apply inputts
+    // apply inputts
     ChassisSpeeds Inputs = new ChassisSpeeds(-x * breaking * 5, y * breaking * 5, rotation * 3);
 
-  //drive with inputs
+    // drive with inputs
     mDrive.Drive(Inputs, RobotAngle, DriveStyleToggle);
   }
 

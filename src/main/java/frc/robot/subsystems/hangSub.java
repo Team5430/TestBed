@@ -11,21 +11,20 @@ public class hangSub extends SubsystemBase {
 
   public hangSub() {
 
-//init motors
+    // init motors
     L = new TalonSRX(10);
     R = new TalonSRX(11);
-//invert motor
+    // invert motor
     R.setInverted(true);
-
   }
 
-//hang only goes down mechanically
+  // hang only goes down mechanically
   public void Down() {
     L.set(ControlMode.PercentOutput, -.5);
     R.set(ControlMode.PercentOutput, -.5);
   }
 
-//Stop motors 
+  // Stop motors
   public void Stop() {
     L.set(ControlMode.PercentOutput, 0);
     R.set(ControlMode.PercentOutput, 0);

@@ -13,11 +13,11 @@ public class SwerveModuleConstants {
   public boolean[] MOTOR_INVERT = {true, false, true, false};
 
   private Translation2d[] ModuleLocations = {
-    new Translation2d(-0.267, -0.267), // back left A 
-    new Translation2d(0.267, 0.267), // front right B 
-    new Translation2d(-0.267, 0.267), // front left  C 
-    new Translation2d(0.267, -0.267) // back right D 
-    };
+    new Translation2d(-0.267, -0.267), // back left A
+    new Translation2d(0.267, 0.267), // front right B
+    new Translation2d(-0.267, 0.267), // front left  C
+    new Translation2d(0.267, -0.267) // back right D
+  };
 
   public SwerveDriveKinematics Kinematics =
       new SwerveDriveKinematics(

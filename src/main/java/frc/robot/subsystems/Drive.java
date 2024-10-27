@@ -16,16 +16,16 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Drive extends SubsystemBase {
 
-//init 
+  // init
   private final StructPublisher<Rotation2d> publisher;
 
-//Swerve Config
+  // Swerve Config
   private SwerveModuleConstants mConfig = new SwerveModuleConstants();
 
-//Swerve DriveTrain
+  // Swerve DriveTrain
   protected SwerveModuleGroup DriveTrain = new SwerveModuleGroup(4, mConfig);
 
-//gyro
+  // gyro
   public AHRS mGyro = new AHRS(Port.kMXP);
 
   public Drive() {
@@ -39,8 +39,7 @@ public class Drive extends SubsystemBase {
     ResetHeading();
   }
 
-  
-//init robot state
+  // init robot state
   private SwerveDriveOdometry m_Odometry =
       new SwerveDriveOdometry(mConfig.Kinematics, getRotation2d(), DriveTrain.getPositions(true));
 
@@ -59,12 +58,12 @@ public class Drive extends SubsystemBase {
     mGyro.reset();
   }
 
-  //get position
+  // get position
   public Pose2d getPose() {
     return m_Odometry.getPoseMeters();
   }
 
-  //reset position
+  // reset position
   public void resetPose() {
     m_Odometry.resetPosition(getRotation2d(), DriveTrain.getPositions(true), getPose());
   }

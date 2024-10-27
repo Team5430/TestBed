@@ -63,10 +63,10 @@ public class SwerveModuleGroup {
         NetworkTableInstance.getDefault()
             .getStructArrayTopic("/SwerveStates", SwerveModuleState.struct)
             .publish();
-    
+
     PositionPublisher =
         NetworkTableInstance.getDefault()
-            .getStructArrayTopic("/SwervePositions",SwerveModulePosition.struct)
+            .getStructArrayTopic("/SwervePositions", SwerveModulePosition.struct)
             .publish();
     // **next step! */    SwerveDrivePoseEstimator t = new SwerveDrivePoseEstimator(m_Kinematics,
     // null, null, null)

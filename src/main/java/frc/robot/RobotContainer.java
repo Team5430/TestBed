@@ -15,19 +15,19 @@ import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.hangSub;
 
 public class RobotContainer {
-//init subsystems
+  // init subsystems
   private Drive m_Drive = new Drive();
 
   private hangSub m_HangSub = new hangSub();
 
-//init controllers
+  // init controllers
   private ControllerManager mControllerManager = new ControllerManager();
 
   private double autoDelay = 0;
 
   public RobotContainer() {
 
-  //dashboard delay
+    // dashboard delay
     SmartDashboard.putNumber("Delay", autoDelay);
 
     // setup drive
@@ -50,15 +50,13 @@ public class RobotContainer {
         .LeftBumper()
         .onTrue(new InstantCommand(m_HangSub::Down))
         .onFalse(new InstantCommand(m_HangSub::Stop));
-        // Allows zero gyro during run time//
+    // Allows zero gyro during run time//
     mControllerManager.B().onTrue(new InstantCommand(m_Drive.mGyro::zeroYaw));
-
   }
 
   public Command getAutonomousCommand() {
 
-//sequence a delay, then drive
+    // sequence a delay, then drive
     return Commands.sequence(new WaitCommand(autoDelay), m_Drive.DriveToDistance(2));
-
   }
 }
