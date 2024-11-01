@@ -11,19 +11,14 @@ import edu.wpi.first.networktables.StructArrayPublisher;
 public class SwerveModuleGroup {
 
   // max is 4 swerve modules; accounted for array
-  private SwerveModule[] swerveModules = new SwerveModule[4];
-  private int moduleCount;
+  protected SwerveModule[] swerveModules = new SwerveModule[4];
+  protected int moduleCount;
 
-  private static SwerveDriveKinematics m_Kinematics;
+  protected SwerveModuleConstants constants;
 
   private final StructArrayPublisher<SwerveModuleState> StatePublisher;
 
   private final StructArrayPublisher<SwerveModulePosition> PositionPublisher;
-
-  public enum DriveStyle {
-    FIELD_CENTRIC,
-    RELATIVE
-  }
 
   /**
    * Modular Swerve creation, can be used to create up to 4 modules at a time. NOTE: Consider
@@ -36,11 +31,11 @@ public class SwerveModuleGroup {
    *
    * <p>An example use case would be a ModuleCount of 3, where
    *
-   * <pre>Module_1              Module_2:             Module_3:
+   * <pre>Module_1              Module_2:            Module_3:
    *
-   *  SteeringCANid: 0     SteeringCANid: 2     SteeringCANid: 4
-   *  ThrottleCANid: 1     ThrottleCANid: 3     ThrottleCANid: 5
-   *  CANCoderCANid: 0     CANCoderCANid: 1     CANCoderCANid: 2</pre>
+   *  SteeringCANid: 0     SteeringCANid: 2    SteeringCANid: 4
+   *  ThrottleCANid: 1     ThrottleCANid: 3    ThrottleCANid: 5
+   *  CANCoderCANid: 0     CANCoderCANid: 1    CANCoderCANid: 2</pre>
    *
    * <p>to configure this to your use case, utilise SwerveModuleConstants
    *
@@ -55,8 +50,8 @@ public class SwerveModuleGroup {
       swerveModules[i] = new SwerveModule(i * 2, i * 2 + 1, i, config.STEERING_MODULE_OFFSET[i]);
       swerveModules[i].invertThrottle(config.MOTOR_INVERT[i]);
     }
-    // set Kinematics
-    m_Kinematics = config.Kinematics;
+    // set config
+    constants = config;
 
     // Start publishing an array of module states with the "/SwerveStates" key
     StatePublisher =
@@ -72,17 +67,10 @@ public class SwerveModuleGroup {
     // null, null, null)
   }
 
-  /** quick auton attempt, nothing special */
-  public void DriveToDistance(double distance) {
-    for (int i = 0; i < moduleCount; i++) {
-      swerveModules[i].DriveToDistance(distance);
-    }
-  }
-
   /** Set Module States to desired state */
   public void SetStates(SwerveModuleState... currentStates) {
     // Prevent Speed from surpassing maxSpeed
-    SwerveDriveKinematics.desaturateWheelSpeeds(currentStates, 5);
+    SwerveDriveKinematics.desaturateWheelSpeeds(currentStates, constants.MAX_VELOCITY_MPS);
 
     // apply states in a for Loop.
     for (int i = 0; i < moduleCount; i++) {
@@ -92,7 +80,7 @@ public class SwerveModuleGroup {
 
   /** forward is relative to the robots forward, classic */
   public void RobotRelativeDrive(ChassisSpeeds speeds) {
-    SwerveModuleState states[] = m_Kinematics.toSwerveModuleStates(speeds);
+    SwerveModuleState[] states = constants.Kinematics.toSwerveModuleStates(speeds);
     SetStates(states);
   }
 
@@ -102,12 +90,11 @@ public class SwerveModuleGroup {
   }
 
   /**
-   * @return the angle anf velocity of the robot
+   * @return the angle and velocity of the robot
    */
   public ChassisSpeeds getCurrentSpeeds() {
 
-    var currentSpeeds = m_Kinematics.toChassisSpeeds(getStates(true));
-    return currentSpeeds;
+    return constants.Kinematics.toChassisSpeeds(getStates(true));
   }
 
   /** STOP!! */

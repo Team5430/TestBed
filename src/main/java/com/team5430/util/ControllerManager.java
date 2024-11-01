@@ -60,6 +60,14 @@ public class ControllerManager {
     return coPilotController.y();
   }
 
+  public void setRumbleOn() {
+    coPilotController.setRumble(true);
+  }
+
+  public void setRumbleOff() {
+    coPilotController.setRumble(false);
+  }
+
   public Trigger LeftBumper() {
     return coPilotController.leftBumper();
   }

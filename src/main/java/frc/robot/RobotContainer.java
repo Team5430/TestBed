@@ -4,37 +4,45 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.team5430.util.CollisionDetection;
 import com.team5430.util.ControllerManager;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.commands.DriveCommand;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.hangSub;
 
 public class RobotContainer {
-  // init subsystems
-  private Drive m_Drive = new Drive();
 
-  private hangSub m_HangSub = new hangSub();
+  //dashboard menu
+  private final SendableChooser<Command> autoChooser;
+
+  // init subsystems
+  protected Drive m_Drive = new Drive();
+
+  protected hangSub m_HangSub = new hangSub();
 
   // init controllers
-  private ControllerManager mControllerManager = new ControllerManager();
+  protected ControllerManager mControllerManager = new ControllerManager();
 
-  private double autoDelay = 0;
+  // feedback
+  CollisionDetection collisionFeedback = new CollisionDetection();
 
   public RobotContainer() {
 
-    // dashboard delay
-    SmartDashboard.putNumber("Delay", autoDelay);
+    //init autoChooser
+    autoChooser = AutoBuilder.buildAutoChooser();
+
+    //put menu on the dashboard
+    SmartDashboard.putData("Auto Chooser", autoChooser);
 
     // setup drive
     m_Drive.setDefaultCommand(
         new DriveCommand(
-            mControllerManager::getY,
             mControllerManager::getX,
+            mControllerManager::getY,
             mControllerManager::getRotation,
             mControllerManager::getThrottleSwitch,
             m_Drive));
@@ -42,7 +50,7 @@ public class RobotContainer {
     configureBindings();
   }
 
-  // contorller bindings here
+  // controller bindings here
   private void configureBindings() {
 
     // bring hang down
@@ -50,13 +58,21 @@ public class RobotContainer {
         .LeftBumper()
         .onTrue(new InstantCommand(m_HangSub::Down))
         .onFalse(new InstantCommand(m_HangSub::Stop));
-    // Allows zero gyro during run time//
+
+    // Allows zero gyro during run time
     mControllerManager.B().onTrue(new InstantCommand(m_Drive.mGyro::zeroYaw));
+
+    // rumble driver whenever there is a hard collision
+    collisionFeedback
+        .DetectionTrigger()
+        .onTrue(new InstantCommand(mControllerManager::setRumbleOn))
+        .onFalse(new InstantCommand(mControllerManager::setRumbleOff));
+
+    // use for any object detection when doing camera work?
+    // new Trigger(() -> m_Drive.getPose().getX() > 10).onTrue(new PrintCommand("tracking"));
   }
 
   public Command getAutonomousCommand() {
-   
-    // sequence a delay, then drive
-    return Commands.sequence(new WaitCommand(autoDelay), m_Drive.DriveToDistance(2));
+    return autoChooser.getSelected();
   }
 }

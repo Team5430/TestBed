@@ -7,12 +7,15 @@ public class SwerveModuleConstants {
 
   public SwerveModuleConstants() {}
 
+  public double MAX_VELOCITY_MPS = 5;
+  public double MAX_OMEGA_RADIANS = 10;
+
   // all arrays follow the order of A = 0, B = 1, C = 2, D = 3
   public double[] STEERING_MODULE_OFFSET = {0.083, 0.02954, .27416, .44789};
 
   public boolean[] MOTOR_INVERT = {true, false, true, false};
 
-  private Translation2d[] ModuleLocations = {
+  protected Translation2d[] ModuleLocations = {
     new Translation2d(-0.267, -0.267), // back left A
     new Translation2d(0.267, 0.267), // front right B
     new Translation2d(-0.267, 0.267), // front left  C

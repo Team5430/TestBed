@@ -6,8 +6,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class hangSub extends SubsystemBase {
 
-  private TalonSRX L;
-  private TalonSRX R;
+  protected TalonSRX L;
+  protected TalonSRX R;
 
   public hangSub() {
 

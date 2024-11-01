@@ -5,7 +5,6 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -20,28 +19,28 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 
 public class SwerveModule implements Sendable {
 
-  private TalonFX angleMotor;
-  private TalonFX driveMotor;
-  private CANcoder CANCoder;
-  private double angleRatio = 1;
-  private double driveRatio = 8.14;
+  protected TalonFX angleMotor;
+  protected TalonFX driveMotor;
+  protected CANcoder CANCoder;
+
+  // constants
+  protected double angleRatio = 1;
+  protected double driveRatio = 8.14;
   public double currentHeading;
   public double currentThrottle;
-  private SwerveModulePosition internalPosition = new SwerveModulePosition();
-  private SwerveModuleState interalState = new SwerveModuleState();
-  private PositionVoltage angleControl = new PositionVoltage(0);
+
+  protected SwerveModulePosition internalPosition = new SwerveModulePosition();
+  protected SwerveModuleState internalState = new SwerveModuleState();
 
   private StatusSignal<Double> drivePosition;
   private StatusSignal<Double> driveVelocity;
   private StatusSignal<Double> anglePosition;
   private StatusSignal<Double> angleVelocity;
-  private BaseStatusSignal[] signals;
+  protected BaseStatusSignal[] signals;
 
-  private double angle_kP = 0.95;
-  private double drive_kP = .15;
-  private double magEncoderOffset;
-
-  public SwerveModule() {}
+  protected double angle_kP = 0.95;
+  protected double drive_kP = .15;
+  private final double magEncoderOffset;
 
   public SwerveModule(int AngleMotorCANid, int DriveMotorCANid, int CANCoderCANid, double offset) {
     angleMotor = new TalonFX(AngleMotorCANid);
@@ -64,12 +63,9 @@ public class SwerveModule implements Sendable {
     signals[3] = angleVelocity;
   }
 
-  public void DriveToDistance(double distance) {
-    angleMotor.setControl(new PositionDutyCycle(0));
-    driveMotor.setControl(new PositionDutyCycle(distance));
-  }
 
   private void motorConfig() {
+
     // create config objects
     TalonFXConfiguration angleConfig = new TalonFXConfiguration();
     TalonFXConfiguration driveConfig = new TalonFXConfiguration();
@@ -112,17 +108,17 @@ public class SwerveModule implements Sendable {
   }
 
   public void setState(SwerveModuleState state) {
-    state = SwerveModuleState.optimize(state, getState(true).angle);
+    var optimize = SwerveModuleState.optimize(state, getState(true).angle);
     // Heading
-    double wantedRad = state.angle.getRadians();
-    // flip wanted to closest direction if needed
+    double wantedRad = optimize.angle.getRadians();
+    // flip wanted to the closest direction if needed
     // SmartDashboard.putNumber("Angle", wantedRad);
 
     angleMotor.setControl(new PositionDutyCycle(wantedRad / (2 * Math.PI)));
 
     // Throttle; cosine compensation
-    var currrentAngle = state.angle;
-    state.speedMetersPerSecond *= state.angle.minus(currrentAngle).getCos();
+    var currentAngle = state.angle;
+    state.speedMetersPerSecond *= state.angle.minus(currentAngle).getCos();
     // get wanted
     double wantedVelocity = state.speedMetersPerSecond;
     driveMotor.setControl(new VelocityDutyCycle(wantedVelocity));
@@ -146,10 +142,8 @@ public class SwerveModule implements Sendable {
     double angleRotations =
         BaseStatusSignal.getLatencyCompensatedValue(anglePosition, angleVelocity);
 
-    double distance = driveRotations;
-    internalPosition.distanceMeters = distance;
-    Rotation2d angle = Rotation2d.fromRotations(angleRotations);
-    internalPosition.angle = angle;
+    internalPosition.distanceMeters = driveRotations;
+    internalPosition.angle = Rotation2d.fromRotations(angleRotations);
 
     return internalPosition;
   }
@@ -161,10 +155,10 @@ public class SwerveModule implements Sendable {
       anglePosition.refresh();
     }
 
-    interalState.angle = Rotation2d.fromDegrees(anglePosition.getValue());
-    interalState.speedMetersPerSecond = driveVelocity.getValue();
+    internalState.angle = Rotation2d.fromDegrees(anglePosition.getValue());
+    internalState.speedMetersPerSecond = driveVelocity.getValue();
 
-    return interalState;
+    return internalState;
   }
 
   public void invertThrottle(boolean input) {

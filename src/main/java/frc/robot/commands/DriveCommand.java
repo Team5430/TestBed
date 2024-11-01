@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import com.team5430.util.MathHelpers;
+import com.team5430.util.SwerveModuleConstants;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -14,6 +15,8 @@ public class DriveCommand extends Command {
   DoubleSupplier xTranslation, yTranslation, rTranslation, ThrottleBreaker;
 
   Boolean FIELD_CENTRIC = false;
+
+  SwerveModuleConstants constants;
 
   public DriveCommand(
       DoubleSupplier X,
@@ -32,9 +35,6 @@ public class DriveCommand extends Command {
   }
 
   @Override
-  public void initialize() {}
-
-  @Override
   public void execute() {
 
     // get inputs
@@ -48,14 +48,19 @@ public class DriveCommand extends Command {
     Rotation2d RobotAngle = mDrive.getRotation2d();
 
     // apply inputts
-    ChassisSpeeds Inputs = new ChassisSpeeds(-x * breaking * 5, y * breaking * 5, rotation * 3);
+    ChassisSpeeds Inputs = new ChassisSpeeds(
+            -x * breaking * constants.MAX_VELOCITY_MPS,
+             y * breaking * constants.MAX_VELOCITY_MPS,
+            rotation * constants.MAX_OMEGA_RADIANS);
 
     // drive with inputs
-    mDrive.Drive(Inputs, RobotAngle, DriveStyleToggle);
+    mDrive.control(Inputs, RobotAngle, DriveStyleToggle);
   }
 
   @Override
-  public void end(boolean interupted) {}
+  public void end(boolean interupted) {
+    mDrive.Stop();
+  }
 
   @Override
   public boolean isFinished() {
