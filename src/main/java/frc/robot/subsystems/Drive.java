@@ -4,8 +4,8 @@ import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.ReplanningConfig;
-import com.team5430.util.SwerveModuleConstants;
-import com.team5430.util.SwerveModuleGroup;
+import com.team5430.swerve.SwerveModuleConstants;
+import com.team5430.swerve.SwerveModuleGroup;
 import com.team5430.util.booleans;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -45,18 +45,10 @@ public class Drive extends SubsystemBase {
             .getStructTopic("/Rotation2d", Rotation2d.struct)
             .publish();
 
+    //make sure gyro is calibrated
     ResetHeading();
-
-    //configure robot driving for auton
-    AutoBuilder.configureHolonomic(
-            this::getPose,
-            this::resetPose,
-            DriveTrain::getCurrentSpeeds,
-            DriveTrain::RobotRelativeDrive,
-            config,
-            booleans.isBlue(),
-            this
-    );
+    //configure for auton
+    configurePathPlanner();
 
   }
 
@@ -75,6 +67,22 @@ public class Drive extends SubsystemBase {
     }
   }
 
+  //configure robot control during auton
+  private void configurePathPlanner(){
+
+     //configure robot driving for auton
+    AutoBuilder.configureHolonomic(
+            this::getPose,
+            this::resetPose,
+            DriveTrain::getCurrentSpeeds,
+            DriveTrain::RobotRelativeDrive,
+            config,
+            booleans.isBlue(),
+            this
+    );
+  }
+
+  //Stops the DriveTrain
   public void Stop(){
     DriveTrain.Stop();
   }
@@ -94,6 +102,7 @@ public class Drive extends SubsystemBase {
     Odometry.resetPosition(getRotation2d(), DriveTrain.getPositions(true), pose);
   }
 
+  //get heading as a Rotation2d
   public Rotation2d getRotation2d() {
     return mGyro.getRotation2d();
   }
@@ -101,7 +110,7 @@ public class Drive extends SubsystemBase {
   // loops stuff
   @Override
   public void periodic() {
-
+    
     publisher.set(getRotation2d());
     DriveTrain.publishData();
   }

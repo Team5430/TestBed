@@ -4,11 +4,11 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.team5430.util.CollisionDetection;
-import com.team5430.util.ControllerManager;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.team5430.control.CollisionDetection;
+import com.team5430.control.ControllerManager;
+
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.commands.DriveCommand;
 import frc.robot.subsystems.Drive;
@@ -16,8 +16,6 @@ import frc.robot.subsystems.hangSub;
 
 public class RobotContainer {
 
-  //dashboard menu
-  private final SendableChooser<Command> autoChooser;
 
   // init subsystems
   protected Drive m_Drive = new Drive();
@@ -32,12 +30,8 @@ public class RobotContainer {
 
   public RobotContainer() {
 
-    //init autoChooser
-    autoChooser = AutoBuilder.buildAutoChooser();
-
-    //put menu on the dashboard
-    SmartDashboard.putData("Auto Chooser", autoChooser);
-
+    NamedCommands.registerCommand("NAME TO REGISTER", new PrintCommand("action"));
+    
     // setup drive
     m_Drive.setDefaultCommand(
         new DriveCommand(
@@ -56,8 +50,8 @@ public class RobotContainer {
     // bring hang down
     mControllerManager
         .LeftBumper()
-        .onTrue(new InstantCommand(m_HangSub::Down))
-        .onFalse(new InstantCommand(m_HangSub::Stop));
+        .onTrue(new hangSub().Down())
+        .onFalse(new hangSub().Stop());
 
     // Allows zero gyro during run time
     mControllerManager.B().onTrue(new InstantCommand(m_Drive.mGyro::zeroYaw));
@@ -73,6 +67,6 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return autoChooser.getSelected();
+    return new PathPlannerAuto("Strafe");
   }
 }

@@ -1,5 +1,5 @@
 // Inspired by NavX-Mxp example for collision detection
-package com.team5430.util;
+package com.team5430.control;
 
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.BuiltInAccelerometer;
