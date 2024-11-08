@@ -39,8 +39,8 @@ public class Robot extends TimedRobot {
 
     var m_Auto = m_robotContainer.getAutonomousCommand();
 
-    ///
     m_Auto.execute();
+
   }
 
   @Override

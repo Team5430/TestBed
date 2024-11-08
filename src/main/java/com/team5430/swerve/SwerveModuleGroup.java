@@ -1,4 +1,4 @@
-package com.team5430.util;
+package com.team5430.swerve;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -40,7 +40,7 @@ public class SwerveModuleGroup {
    * <p>to configure this to your use case, utilise SwerveModuleConstants
    *
    * @param ModuleCount Allows creation of up to 4 SwerveModules, based on your given config
-   * @see com.team5430.util.SwerveModuleConstants
+   * @see com.team5430.swerve.SwerveModuleConstants
    */
   public SwerveModuleGroup(int ModuleCount, SwerveModuleConstants config) {
 

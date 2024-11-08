@@ -1,4 +1,4 @@
-package com.team5430.util;
+package com.team5430.control;
 
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;

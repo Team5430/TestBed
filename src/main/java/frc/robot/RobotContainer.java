@@ -5,7 +5,6 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import com.team5430.util.CollisionDetection;
 import com.team5430.util.ControllerManager;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -17,8 +16,6 @@ import frc.robot.subsystems.hangSub;
 
 public class RobotContainer {
 
-  //dashboard menu
-  private final SendableChooser<Command> autoChooser;
 
   // init subsystems
   protected Drive m_Drive = new Drive();
@@ -33,14 +30,11 @@ public class RobotContainer {
 
   public RobotContainer() {
 
-    //register commands
-    NamedCommands.registerCommand("NAMETOBEUSEDINSOFTWARE", new PrintCommand("Hello"));
     //init autoChooser
     autoChooser = AutoBuilder.buildAutoChooser();
-    
+
     //put menu on the dashboard
     SmartDashboard.putData("Auto Chooser", autoChooser);
-
 
     // setup drive
     m_Drive.setDefaultCommand(
@@ -60,8 +54,8 @@ public class RobotContainer {
     // bring hang down
     mControllerManager
         .LeftBumper()
-        .onTrue(new InstantCommand(m_HangSub::Down))
-        .onFalse(new InstantCommand(m_HangSub::Stop));
+        .onTrue(new hangSub().Down())
+        .onFalse(new hangSub().Stop());
 
     // Allows zero gyro during run time
     mControllerManager.B().onTrue(new InstantCommand(m_Drive.mGyro::zeroYaw));
@@ -77,6 +71,6 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return autoChooser.getSelected();
+    return new PathPlannerAuto("Strafe");
   }
 }

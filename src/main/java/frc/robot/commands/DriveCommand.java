@@ -1,7 +1,8 @@
 package frc.robot.commands;
 
+import com.team5430.swerve.SwerveModuleConstants;
 import com.team5430.util.MathHelpers;
-import com.team5430.util.SwerveModuleConstants;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -10,14 +11,21 @@ import java.util.function.DoubleSupplier;
 
 public class DriveCommand extends Command {
 
+  //subsystem to require
   Drive mDrive;
 
+  //double suppliers for human inputs
   DoubleSupplier xTranslation, yTranslation, rTranslation, ThrottleBreaker;
 
+  //TOGGLE PER PREFERNCE
   Boolean FIELD_CENTRIC = false;
 
+  //constants for swerve
   SwerveModuleConstants constants;
 
+  //params 
+  /*  Command for driving the DriveTrain
+      Utilises **/
   public DriveCommand(
       DoubleSupplier X,
       DoubleSupplier Y,
@@ -47,7 +55,7 @@ public class DriveCommand extends Command {
     boolean DriveStyleToggle = FIELD_CENTRIC;
     Rotation2d RobotAngle = mDrive.getRotation2d();
 
-    // apply inputts
+    // apply inputs
     ChassisSpeeds Inputs = new ChassisSpeeds(
             -x * breaking * constants.MAX_VELOCITY_MPS,
              y * breaking * constants.MAX_VELOCITY_MPS,
@@ -57,6 +65,7 @@ public class DriveCommand extends Command {
     mDrive.control(Inputs, RobotAngle, DriveStyleToggle);
   }
 
+  //stop the drivetrain
   @Override
   public void end(boolean interupted) {
     mDrive.Stop();
