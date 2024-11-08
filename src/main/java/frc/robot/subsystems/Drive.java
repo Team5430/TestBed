@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import com.team5430.util.SwerveModuleConstants;
 import com.team5430.util.SwerveModuleGroup;
@@ -14,6 +15,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.SPI.Port;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Drive extends SubsystemBase {
@@ -32,14 +35,20 @@ public class Drive extends SubsystemBase {
 
 
   HolonomicPathFollowerConfig config = new HolonomicPathFollowerConfig(
-          5,
-          4,
+          mConfig.MAX_VELOCITY_MPS,
+          mConfig.DRIVE_BASE_RADIUS,
           new ReplanningConfig()
   );
+
+protected Field2d field;
+
 
   public Drive() {
 
     // data logging
+    field = new Field2d();
+    SmartDashboard.putData("field", field);
+
     publisher =
         NetworkTableInstance.getDefault()
             .getStructTopic("/Rotation2d", Rotation2d.struct)

@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.team5430.util.CollisionDetection;
 import com.team5430.util.ControllerManager;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -32,11 +33,14 @@ public class RobotContainer {
 
   public RobotContainer() {
 
+    //register commands
+    NamedCommands.registerCommand("NAMETOBEUSEDINSOFTWARE", new PrintCommand("Hello"));
     //init autoChooser
     autoChooser = AutoBuilder.buildAutoChooser();
-
+    
     //put menu on the dashboard
     SmartDashboard.putData("Auto Chooser", autoChooser);
+
 
     // setup drive
     m_Drive.setDefaultCommand(
