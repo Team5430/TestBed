@@ -1,5 +1,7 @@
 package com.team5430.util;
 
+import java.util.function.DoubleSupplier;
+
 public class MathHelpers {
 
   private MathHelpers() {
@@ -33,4 +35,12 @@ public class MathHelpers {
     }
     return wantedRad;
   }
+
+  private final DoubleSupplier Zeroed =
+      new DoubleSupplier() {
+        @Override
+        public double getAsDouble() {
+          return 0;
+        }
+      };
 }

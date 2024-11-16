@@ -1,20 +1,16 @@
 package com.team5430.swerve;
 
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.util.Units;
 
 public class SwerveModuleConstants {
 
-  public SwerveModuleConstants() {}
-
-  //max velocity of the robot as a whole in meters per second
   public double MAX_VELOCITY_MPS = 5;
-  //Max angular velocity of the swerve modules 
   public double MAX_OMEGA_RADIANS = 10;
-  //radius of the robot, from center of robot
-  public double DRIVE_BASE_RADIUS = Units.inchesToMeters(12);
-
+  public double DRIVE_BASE_RADIUS = 1;
 
   // all arrays follow the order of A = 0, B = 1, C = 2, D = 3
   public double[] STEERING_MODULE_OFFSET = {0.083, 0.02954, .27416, .44789};
@@ -30,8 +26,17 @@ public class SwerveModuleConstants {
 
   public SwerveDriveKinematics Kinematics =
       new SwerveDriveKinematics(
-          // Translation2d -> location of the graph in swerve module is Front is postive, Left is
+          // Translation2d -> location of the graph in swerve module is Front is positive, Left is
           // positive
           // Measurement: Meters
           ModuleLocations);
+
+  // auton speed configs
+  public HolonomicPathFollowerConfig pathFollowerConfig =
+      new HolonomicPathFollowerConfig(
+          new PIDConstants(1),
+          new PIDConstants(1),
+          MAX_VELOCITY_MPS,
+          DRIVE_BASE_RADIUS,
+          new ReplanningConfig());
 }

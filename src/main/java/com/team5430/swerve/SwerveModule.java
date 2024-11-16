@@ -26,8 +26,6 @@ public class SwerveModule implements Sendable {
   // constants
   protected double angleRatio = 1;
   protected double driveRatio = 8.14;
-  public double currentHeading;
-  public double currentThrottle;
 
   protected SwerveModulePosition internalPosition = new SwerveModulePosition();
   protected SwerveModuleState internalState = new SwerveModuleState();
@@ -62,7 +60,6 @@ public class SwerveModule implements Sendable {
     signals[2] = anglePosition;
     signals[3] = angleVelocity;
   }
-
 
   private void motorConfig() {
 

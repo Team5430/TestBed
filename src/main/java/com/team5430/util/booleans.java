@@ -6,13 +6,20 @@ import java.util.function.BooleanSupplier;
 
 public class booleans {
 
-    private booleans(){}
+  private booleans() {}
 
-    public static BooleanSupplier isBlue(){
-        return () ->
-        {
-            var alliance = DriverStation.getAlliance();
-            return alliance.filter(color -> color == DriverStation.Alliance.Blue).isPresent();
-        };
-    }
+  public static BooleanSupplier isBlue() {
+    return () -> {
+      var alliance = DriverStation.getAlliance();
+      return alliance.filter(color -> color == DriverStation.Alliance.Blue).isPresent();
+    };
+  }
+
+  public static BooleanSupplier isTeleop() {
+    return DriverStation::isTeleop;
+  }
+
+  public static BooleanSupplier isAutonomous() {
+    return DriverStation::isAutonomous;
+  }
 }

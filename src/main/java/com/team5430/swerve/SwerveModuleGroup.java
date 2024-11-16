@@ -48,7 +48,7 @@ public class SwerveModuleGroup {
 
     for (int i = 0; i < moduleCount; i++) {
       swerveModules[i] = new SwerveModule(i * 2, i * 2 + 1, i, config.STEERING_MODULE_OFFSET[i]);
-      swerveModules[i].invertThrottle(config.MOTOR_INVERT[i]);
+      //   swerveModules[i].invertThrottle(config.MOTOR_INVERT[i]);
     }
     // set config
     constants = config;
@@ -69,6 +69,7 @@ public class SwerveModuleGroup {
 
   /** Set Module States to desired state */
   public void SetStates(SwerveModuleState... currentStates) {
+
     // Prevent Speed from surpassing maxSpeed
     SwerveDriveKinematics.desaturateWheelSpeeds(currentStates, constants.MAX_VELOCITY_MPS);
 

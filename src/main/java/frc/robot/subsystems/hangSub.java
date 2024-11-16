@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -23,20 +22,21 @@ public class hangSub extends SubsystemBase {
 
   // hang only goes down mechanically
   public Command Down() {
-    return Commands.runOnce(() -> {
-      L.set(ControlMode.PercentOutput, -.5);
-      R.set(ControlMode.PercentOutput, -.5);
-    }, 
-    this);
+    return Commands.runOnce(
+        () -> {
+          L.set(ControlMode.PercentOutput, -.5);
+          R.set(ControlMode.PercentOutput, -.5);
+        },
+        this);
   }
 
   // Stop motors
   public Command Stop() {
-    return Commands.runOnce(() -> {
-      L.set(ControlMode.PercentOutput, 0);
-      R.set(ControlMode.PercentOutput, 0);
-    }, 
-    this);
+    return Commands.runOnce(
+        () -> {
+          L.set(ControlMode.PercentOutput, 0);
+          R.set(ControlMode.PercentOutput, 0);
+        },
+        this);
   }
-  
 }

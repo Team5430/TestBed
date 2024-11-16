@@ -2,30 +2,37 @@ package frc.robot.commands;
 
 import com.team5430.swerve.SwerveModuleConstants;
 import com.team5430.util.MathHelpers;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Drive;
+
 import java.util.function.DoubleSupplier;
 
 public class DriveCommand extends Command {
 
-  //subsystem to require
+  // subsystem to require
   Drive mDrive;
 
-  //double suppliers for human inputs
+  // double suppliers for human inputs
   DoubleSupplier xTranslation, yTranslation, rTranslation, ThrottleBreaker;
 
-  //TOGGLE PER PREFERNCE
+  // TOGGLE PER PREFERENCE
   Boolean FIELD_CENTRIC = false;
 
-  //constants for swerve
+  // constants for swerve
   SwerveModuleConstants constants;
 
-  //params 
-  /*  Command for driving the DriveTrain
-      Utilises **/
+  // params
+  /**
+   * Command for driving the DriveTrain
+   *
+   * @param X x translation control
+   * @param Y y translation control
+   * @param Rotation rotational control
+   * @param breaking axis to utilise as a break
+   * @param subsystem drive subsystem that is required
+   */
   public DriveCommand(
       DoubleSupplier X,
       DoubleSupplier Y,
@@ -56,18 +63,19 @@ public class DriveCommand extends Command {
     Rotation2d RobotAngle = mDrive.getRotation2d();
 
     // apply inputs
-    ChassisSpeeds Inputs = new ChassisSpeeds(
+    ChassisSpeeds Inputs =
+        new ChassisSpeeds(
             -x * breaking * constants.MAX_VELOCITY_MPS,
-             y * breaking * constants.MAX_VELOCITY_MPS,
+            y * breaking * constants.MAX_VELOCITY_MPS,
             rotation * constants.MAX_OMEGA_RADIANS);
 
     // drive with inputs
     mDrive.control(Inputs, RobotAngle, DriveStyleToggle);
   }
 
-  //stop the drivetrain
+  // stop the drivetrain
   @Override
-  public void end(boolean interupted) {
+  public void end(boolean interrupted) {
     mDrive.Stop();
   }
 

@@ -9,7 +9,9 @@ public class ControllerManager {
 
   CommandJoystick DriverJoystick;
   CustomXboxController coPilotController;
+  // deadzone
   double axisThreshold = .3;
+  //  1/100th of a second  from 0 to 100%
   double mRate = 100;
 
   SlewRateLimiter Xoptimize = new SlewRateLimiter(mRate);

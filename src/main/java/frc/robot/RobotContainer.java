@@ -4,23 +4,24 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.team5430.util.CollisionDetection;
-import com.team5430.util.ControllerManager;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.*;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.team5430.control.CollisionDetection;
+import com.team5430.control.ControllerManager;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import frc.robot.commands.DriveCommand;
 import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.hangSub;
 
 public class RobotContainer {
 
-
   // init subsystems
   protected Drive m_Drive = new Drive();
 
-  protected hangSub m_HangSub = new hangSub();
+  protected Vision m_Vision = new Vision();
 
   // init controllers
   protected ControllerManager mControllerManager = new ControllerManager();
@@ -30,11 +31,7 @@ public class RobotContainer {
 
   public RobotContainer() {
 
-    //init autoChooser
-    autoChooser = AutoBuilder.buildAutoChooser();
-
-    //put menu on the dashboard
-    SmartDashboard.putData("Auto Chooser", autoChooser);
+    NamedCommands.registerCommand("NAME TO REGISTER", new PrintCommand("action"));
 
     // setup drive
     m_Drive.setDefaultCommand(
@@ -52,13 +49,23 @@ public class RobotContainer {
   private void configureBindings() {
 
     // bring hang down
-    mControllerManager
-        .LeftBumper()
-        .onTrue(new hangSub().Down())
-        .onFalse(new hangSub().Stop());
+    mControllerManager.LeftBumper().onTrue(new hangSub().Down()).onFalse(new hangSub().Stop());
 
     // Allows zero gyro during run time
     mControllerManager.B().onTrue(new InstantCommand(m_Drive.mGyro::zeroYaw));
+
+    // Auto aim and direct towards april tag in sight
+    // NOTE: overrides normal drive control !!!
+    mControllerManager
+        .A()
+        .and(m_Vision.TagInRange())
+        .onTrue(
+            new DriveCommand(
+                m_Vision::proportionalRange,
+                mControllerManager::getY,
+                m_Vision::proportionalAim,
+                mControllerManager::getThrottleSwitch,
+                m_Drive));
 
     // rumble driver whenever there is a hard collision
     collisionFeedback
