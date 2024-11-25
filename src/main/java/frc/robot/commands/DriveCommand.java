@@ -5,8 +5,7 @@ import com.team5430.util.MathHelpers;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Drive;
-
+import frc.robot.subsystems.Drive.Drive;
 import java.util.function.DoubleSupplier;
 
 public class DriveCommand extends Command {
@@ -45,6 +44,8 @@ public class DriveCommand extends Command {
     rTranslation = Rotation;
     ThrottleBreaker = breaking;
     mDrive = subsystem;
+
+    constants = new SwerveModuleConstants();
     // require Drive subsystem
     addRequirements(subsystem);
   }
@@ -65,7 +66,7 @@ public class DriveCommand extends Command {
     // apply inputs
     ChassisSpeeds Inputs =
         new ChassisSpeeds(
-            -x * breaking * constants.MAX_VELOCITY_MPS,
+            x * breaking * constants.MAX_VELOCITY_MPS,
             y * breaking * constants.MAX_VELOCITY_MPS,
             rotation * constants.MAX_OMEGA_RADIANS);
 

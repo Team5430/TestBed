@@ -16,9 +16,6 @@ public class MathHelpers {
     // If the input given is less than 0.3 the rotation will reset to 0
     if (power < -0.3) {
       lastAngle = angle;
-      if (power > -0.3) {
-        return angle;
-      }
     }
     return lastAngle;
   }
@@ -37,10 +34,5 @@ public class MathHelpers {
   }
 
   private final DoubleSupplier Zeroed =
-      new DoubleSupplier() {
-        @Override
-        public double getAsDouble() {
-          return 0;
-        }
-      };
+          () -> 0;
 }

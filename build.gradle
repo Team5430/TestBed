@@ -1,7 +1,6 @@
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2024.3.2"
-    id 'com.diffplug.spotless' version '6.20.0'
 }
 
 java {
@@ -48,52 +47,13 @@ wpi.java.debugJni = false
 // Set this to true to enable desktop support.
 def includeDesktopSupport = false
 
-spotless {
-    java {
-        target fileTree('.') {
-            include '**/*.java'
-            exclude '**/build/**', '**/build-*/**'
-        }
-        toggleOffOn()
-        googleJavaFormat()
-        removeUnusedImports()
-        trimTrailingWhitespace()
-        endWithNewline()
-    }
-    groovyGradle {
-        target fileTree('.') {
-            include '**/*.gradle'
-            exclude '**/build/**', '**/build-*/**'
-        }
-        greclipse()
-        indentWithSpaces(4)
-        trimTrailingWhitespace()
-        endWithNewline()
-    }
-    format 'xml', {
-        target fileTree('.') {
-            include '**/*.xml'
-            exclude '**/build/**', '**/build-*/**'
-        }
-        eclipseWtp('xml')
-        trimTrailingWhitespace()
-        indentWithSpaces(2)
-        endWithNewline()
-    }
-    format 'misc', {
-        target fileTree('.') {
-            include '**/*.md', '**/.gitignore'
-            exclude '**/build/**', '**/build-*/**'
-        }
-        trimTrailingWhitespace()
-        indentWithSpaces(2)
-        endWithNewline()
-    }
-}
+
 
 // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
 // Also defines JUnit 5.
 dependencies {
+
+
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
 

@@ -4,7 +4,6 @@ import com.team5430.vision.LimelightHelpers.LimelightResults;
 import com.team5430.vision.LimelightHelpers.LimelightTarget_Fiducial;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
 import java.util.function.BooleanSupplier;
 
 public class LimeLight {
@@ -49,7 +48,7 @@ public class LimeLight {
         pose3d.getX(),
         pose3d.getY(),
         pose3d.getZ(),
-        // if doesnt work convert to degrees Units.radiansToDegrees()
+        // if doesn't work convert to degrees Units.radiansToDegrees()
         pose3d.getRotation().getX(),
         pose3d.getRotation().getY(),
         pose3d.getZ());
