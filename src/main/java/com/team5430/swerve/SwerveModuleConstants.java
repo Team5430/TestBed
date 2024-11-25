@@ -53,10 +53,10 @@ public class SwerveModuleConstants {
 //TODO: reason why control is so wierd
   // Module locations for kinematics calculations
   protected Translation2d[] ModuleLocations = {
-          new Translation2d(-0.267, -0.267), // Back left (A)
-          new Translation2d(0.267, 0.267),   // Front right (B)
+          new Translation2d(0.267, 0.267), // Back left (A)
+          new Translation2d(0.267, -0.267),   // Front right (B)
           new Translation2d(-0.267, 0.267),  // Front left (C)
-          new Translation2d(0.267, -0.267)   // Back right (D)
+          new Translation2d(-0.267, -0.267)   // Back right (D)
   };
 
   // Swerve drive kinematics

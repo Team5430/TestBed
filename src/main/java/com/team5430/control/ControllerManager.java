@@ -37,6 +37,9 @@ public class ControllerManager {
     return MathUtil.applyDeadband(Roptimize.calculate(DriverJoystick.getRawAxis(2)), .6);
   }
 
+  public double getRightX(){
+    return MathUtil.applyDeadband(Roptimize.calculate(DriverJoystick.getRawAxis(4)), axisThreshold);
+  }
   public double getThrottleSwitch() {
     return DriverJoystick.getRawAxis(3);
   }

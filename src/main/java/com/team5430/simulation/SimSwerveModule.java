@@ -25,11 +25,7 @@ public class SimSwerveModule {
   private SwerveModulePosition position = new SwerveModulePosition();
   private SwerveModuleState state = new SwerveModuleState();
 
-    public SimSwerveModule(){
-
-
-    }
-
+    public SimSwerveModule(){}
 
   public void setState(SwerveModuleState desiredState) {
     // Set steer angle and throttle speed based on the desired state
@@ -49,7 +45,7 @@ public class SimSwerveModule {
   public SwerveModulePosition getPosition(boolean refresh) {
     if (refresh) {
       this.position.angle = new Rotation2d(steerAngle);
-      this.position.distanceMeters = getThrottlePosition();
+      this.position.distanceMeters = getSteerPosition()/ 6*Math.PI;
     }
     return this.position;
   }

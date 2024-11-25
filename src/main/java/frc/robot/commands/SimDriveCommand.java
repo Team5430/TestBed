@@ -55,10 +55,10 @@ public class SimDriveCommand extends Command {
         boolean driveStyleToggle = FIELD_CENTRIC;
         Rotation2d robotAngle = mDrive.getRotation2d();
 
-        // Apply inputs
+        // Apply inputs; invert to regular axis 
         ChassisSpeeds inputs = new ChassisSpeeds(
-               - x  * constants.MAX_VELOCITY_MPS,
-                y  * constants.MAX_VELOCITY_MPS,
+               -y  * constants.MAX_VELOCITY_MPS,
+                -x  * constants.MAX_VELOCITY_MPS,
                 rotation * constants.MAX_OMEGA_RADIANS
         );
 

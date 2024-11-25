@@ -18,7 +18,7 @@ public class SimSwerveModuleGroup {
      * @param kinematics Swerve drive kinematics used for conversions
      * @param moduleCount Number of swerve modules to initialize (max 4)
      */
-    public SimSwerveModuleGroup(SwerveDriveKinematics kinematics, int moduleCount) {
+    public SimSwerveModuleGroup(int moduleCount, SwerveDriveKinematics kinematics) {
         this.moduleCount = moduleCount;
         this.kinematics = kinematics;
         for (int i = 0; i < moduleCount; i++) {
@@ -115,5 +115,11 @@ public class SimSwerveModuleGroup {
         SwerveModuleState[] states = getStates(refresh);
         var speeds = kinematics.toChassisSpeeds(states);
         return speeds.omegaRadiansPerSecond;
+    }
+
+    public Rotation2d getRotation2d(){
+        var twist = kinematics.toTwist2d(getPositions(true));
+        Rotation2d simRotation = new Rotation2d(twist.dtheta * .1);
+        return simRotation;
     }
 }

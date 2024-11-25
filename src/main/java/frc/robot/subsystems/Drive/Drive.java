@@ -47,23 +47,29 @@ public class Drive extends SubsystemBase {
                 driveTrain = new SwerveModuleGroup(4, mConfig);
                 Odometry = new SwerveDrivePoseEstimator(
                         mConfig.Kinematics, getRotation2d(), driveTrain.getPositions(true), new Pose2d());
-                configurePathPlanner();
                 break;
             case SIM_ROBOT:
+                //init sim gyro
                 mGyro = new SimAHRS();
                 mGyro.initSim();
-                simDriveTrain = new SimSwerveModuleGroup(mConfig.Kinematics, 4);
+
+                //create sim drivetrain
+                simDriveTrain = new SimSwerveModuleGroup(4, mConfig.Kinematics);
                 Odometry = new SwerveDrivePoseEstimator(
-                        mConfig.Kinematics, getRotation2d(), simDriveTrain.getPositions(true), new Pose2d());
-                configurePathPlanner();
+                        mConfig.Kinematics, simDriveTrain.getRotation2d(), simDriveTrain.getPositions(true), new Pose2d());
+                
+                //data publishin
                 mPublisher = NetworkTableInstance.getDefault()
                         .getStructArrayTopic("/SwerveStates", SwerveModuleState.struct)
                         .publish();
+                        
                 mPublisher2 = NetworkTableInstance.getDefault()
                         .getStructTopic("/Pose2d", Pose2d.struct)
                         .publish();
                 break;
         }
+
+        configurePathPlanner();
 
         ResetHeading();
     }
@@ -137,6 +143,9 @@ public class Drive extends SubsystemBase {
 
     @Override
     public void simulationPeriodic(){
+
+        //update gyro sim
+        mGyro.yaw.set(simDriveTrain.getRotation2d().getDegrees());
         
         simDriveTrain.updateSim();
         // Update the simulated drive train positions
@@ -146,6 +155,7 @@ public class Drive extends SubsystemBase {
         //TODO: autonmous but simulated!!!
         // Update odometry with simulated values
         Odometry.update(getRotation2d(), simDriveTrain.getPositions(true));
+        
     }
     // Loops stuff
     @Override

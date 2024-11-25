@@ -4,12 +4,18 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.team5430.control.CollisionDetection;
 import com.team5430.control.ControllerManager;
 import com.team5430.util.booleans;
+
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import frc.robot.commands.DriveCommand;
@@ -19,6 +25,8 @@ import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.hangSub;
 
 public class RobotContainer {
+
+    private final SendableChooser<Command> autoChooser;
 
   // init subsystems
   protected Drive m_Drive = new Drive();
@@ -33,9 +41,14 @@ public class RobotContainer {
   // feedback
   CollisionDetection collisionFeedback = new CollisionDetection();
 
-  public RobotContainer() {
 
-    NamedCommands.registerCommand("NAME TO REGISTER", new PrintCommand("action"));
+  public RobotContainer() {
+    
+    //NamedCommands.registerCommand("NAME TO REGISTER", new PrintCommand("action"));
+
+    autoChooser = AutoBuilder.buildAutoChooser();
+        SmartDashboard.putData("Auto Chooser", autoChooser);
+
 
     // setup drive
     if (booleans.getRobot() == booleans.RobotType.REAL_ROBOT) {
@@ -43,7 +56,7 @@ public class RobotContainer {
               new DriveCommand(
               mControllerManager::getX,
               mControllerManager::getY,
-              mControllerManager::getRotation,
+              mControllerManager::getRightX,
               mControllerManager::getThrottleSwitch,
               m_Drive));
     } else {
@@ -51,7 +64,7 @@ public class RobotContainer {
               new SimDriveCommand(
               mControllerManager::getX,
               mControllerManager::getY,
-              mControllerManager::getRotation,
+              mControllerManager::getRightX,
               m_Drive));
     }
 
@@ -67,12 +80,7 @@ public class RobotContainer {
         .LeftBumper()
         .onTrue(new hangSub().Down())
         .onFalse(new hangSub().Stop());
-
-    // Allows zero gyro during run time
-    mControllerManager
-        .B()
-        .onTrue(new InstantCommand(m_Drive::zeroYaw));
-
+        
     // Auto aim and direct towards april tag in sight
     // NOTE: overrides normal drive control !!! (to be tested)
     mControllerManager
@@ -97,6 +105,18 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return new PathPlannerAuto("Strafe");
+
+    try{
+     
+      //load auto
+      return autoChooser.getSelected();
+
+    }catch (Exception e){
+
+      DriverStation.reportError("HERE!!!:" + e.getMessage(),  e.getStackTrace());
+      return Commands.none();
+
+    }
+
   }
 }

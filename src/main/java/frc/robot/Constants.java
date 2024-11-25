@@ -5,7 +5,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 
 public class Constants {
 
-  SwerveModuleConstants SwerveConstants = new SwerveModuleConstants();
+  public static SwerveModuleConstants SwerveConstants = new SwerveModuleConstants();
 
   public class VisionConstants {
     // position of camera relative to the robots center
