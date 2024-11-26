@@ -37,7 +37,7 @@ public class SimSwerveModule {
   public SwerveModuleState getState(boolean refresh) {
     if (refresh) {
       this.state.angle = new Rotation2d(steerAngle);
-      this.state.speedMetersPerSecond = getThrottleVelocity();
+      this.state.speedMetersPerSecond = getThrottleVelocityRadPerSec();
     }
     return this.state;
   }
@@ -45,7 +45,7 @@ public class SimSwerveModule {
   public SwerveModulePosition getPosition(boolean refresh) {
     if (refresh) {
       this.position.angle = new Rotation2d(steerAngle);
-      this.position.distanceMeters = getSteerPosition();
+      this.position.distanceMeters = getSteerAngularPositionRad();
     }
     return this.position;
   }
@@ -77,19 +77,21 @@ public class SimSwerveModule {
     }
 
     //position values kind of suck for simulating a Swerve module; use saved {@code steerAngle} instead
-    public double getSteerPosition() {
+    //(most likely user fault thought, so if you can try to make it work)
+    public double getSteerAngularPositionRad() {
         return steerSim.getAngularPositionRad();
     }
 
-    public double getThrottlePosition() {
+    public double getThrottleAngularPositionRad() {
         return throttleSim.getAngularPositionRad();
     }
 
-    public double getSteerVelocity() {
+    //these are good
+    public double getSteerVelocityRadPerSec() {
         return steerSim.getAngularVelocityRadPerSec();
     }
 
-    public double getThrottleVelocity() {
+    public double getThrottleVelocityRadPerSec() {
         return throttleSim.getAngularVelocityRadPerSec();
     }
 

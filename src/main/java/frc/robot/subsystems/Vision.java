@@ -32,10 +32,12 @@ public class Vision extends SubsystemBase {
     return camera.AprilTagDetected;
   }
 
+  //Megatag2 getter for pose !!!
   public Pose2d getPose2d(double robotAngle){
     return camera.getPose2d(robotAngle);
   }
 
+  /**timestamp of {@code getPose2d}*/
   public double getPoseTimestamp(){
     return camera.poseEstimateTimestamp();
   }
@@ -53,6 +55,7 @@ public class Vision extends SubsystemBase {
   public void periodic() {
   //update camera results 
     camera.updateResults();
+    //TODO: modify periodic loop time for vison; add practical functionality to {@code Limelight.LEDs}
   }
 
 }

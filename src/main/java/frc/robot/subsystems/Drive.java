@@ -15,13 +15,15 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Robot;
 
 public class Drive extends SubsystemBase {
 
 //TODO: make it look pretty !!!
 //TODO: fix Rotation2d in simulation (works but not as intended)
     // Swerve Config
-    private final SwerveModuleConstants mConfig = new SwerveModuleConstants();
+    private final SwerveModuleConstants mConfig = Constants.SwerveConstants;
 
     //swerve logging
     StructArrayPublisher<SwerveModuleState> mPublisher;
@@ -30,6 +32,7 @@ public class Drive extends SubsystemBase {
     protected SwerveModuleGroup driveTrain;
     protected SimSwerveModuleGroup simDriveTrain;
 
+    //toggle depending on driver perference
     boolean isFieldCentric = true;
 
     // Gyro
@@ -85,12 +88,12 @@ public class Drive extends SubsystemBase {
     
     //get robot modules positions !!!
     public SwerveModulePosition[] getModulePositions(){
-        return booleans.RobotisReal().getAsBoolean() 
+        return Robot.isReal() 
         ? driveTrain.getPositions(true) : simDriveTrain.getPositions(true);
     }
 
     public ChassisSpeeds getCurrentSpeeds(){
-        return booleans.RobotisReal().getAsBoolean() 
+        return Robot.isReal() 
         ? driveTrain.getCurrentSpeeds() : simDriveTrain.getCurrentSpeeds();
     }
 
@@ -112,10 +115,6 @@ public class Drive extends SubsystemBase {
     // Get heading as a Rotation2d
     public Rotation2d getRotation2d() {
         return mGyro != null ? mGyro.getRotation2d() : new Rotation2d(simDriveTrain.getAverageOmegaRadiansPerSecond(true));
-    }
-
-    public void zeroYaw() {
-        mGyro.zeroYaw();
     }
 
     @Override

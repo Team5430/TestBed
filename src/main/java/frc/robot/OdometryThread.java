@@ -15,8 +15,6 @@ import frc.robot.subsystems.Vision;
 
 public class OdometryThread extends Thread{
     
-    
-    
     //init subsystems
     protected Drive mDrive = Drive.getInstance();
 
@@ -56,6 +54,7 @@ public class OdometryThread extends Thread{
         }    
     }
 
+    //pathplanner setup
     private void configurePathPlanner(){
         AutoBuilder.configureHolonomic(
             this::getPose2d,
@@ -69,6 +68,7 @@ public class OdometryThread extends Thread{
 
     @Override
     public void run(){
+        //setup poseEstimator on thread creation
         Threads.setCurrentThreadPriority(true, 1);
 
         mPoseEstimator = new SwerveDrivePoseEstimator

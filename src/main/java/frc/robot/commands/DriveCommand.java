@@ -48,7 +48,7 @@ public class DriveCommand extends Command {
         double y = yTranslation.getAsDouble();
         double rotation = rTranslation.getAsDouble();
 
-        // Apply inputs; invert to regular axis 
+        // Apply inputs; invert to normal cordinate system 
         ChassisSpeeds inputs = new ChassisSpeeds(
                -y  * constants.MAX_VELOCITY_MPS,
                 -x  * constants.MAX_VELOCITY_MPS,
@@ -59,7 +59,7 @@ public class DriveCommand extends Command {
         mDrive.control(inputs);
     }
 
-    // Stop the drivetrain
+    // Stop the drivetrain pm emd
     @Override
     public void end(boolean interrupted) {
         mDrive.Stop();

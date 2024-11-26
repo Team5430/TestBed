@@ -7,7 +7,6 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.team5430.control.CollisionDetection;
 import com.team5430.control.ControllerManager;
-import com.team5430.util.booleans;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -22,6 +21,7 @@ import frc.robot.subsystems.Drive;
 
 public class RobotContainer {
 
+  //auton dashboard chooser
     private final SendableChooser<Command> autoChooser;
 
   // init subsystems
@@ -43,6 +43,7 @@ public class RobotContainer {
 
   public RobotContainer() {
 
+    //Pathplanner example to register commands for gui usage
     //NamedCommands.registerCommand("NAME TO REGISTER", new PrintCommand("action"));
 
     //setup autochooser
