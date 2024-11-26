@@ -60,9 +60,13 @@ public class SwerveModule {
 
     // Initialize sensor signals for position and velocity
     this.drivePosition = throttleMotor.getPosition();
+      drivePosition.setUpdateFrequency(25);
     this.driveVelocity = throttleMotor.getVelocity();
+      driveVelocity.setUpdateFrequency(25);
     this.steeringPosition = steeringMotor.getPosition();
+      steeringPosition.setUpdateFrequency(25);
     this.angularVelocity = steeringMotor.getVelocity();
+      angularVelocity.setUpdateFrequency(10);
 
     // Store signals in an array for easier management
     this.signals = new BaseStatusSignal[4];

@@ -5,8 +5,6 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.team5430.control.CollisionDetection;
 import com.team5430.control.ControllerManager;
 import com.team5430.util.booleans;
@@ -17,23 +15,24 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import frc.robot.commands.DriveCommand;
-import frc.robot.commands.SimDriveCommand;
-import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.hangSub;
+import frc.robot.subsystems.Drive;
 
 public class RobotContainer {
 
     private final SendableChooser<Command> autoChooser;
 
   // init subsystems
-  protected Drive m_Drive = new Drive();
+  protected Drive mDrive = Drive.getInstance();
 
-  protected Vision m_Vision = new Vision();
+  protected Vision m_Vision = Vision.getInstance();
 
-  protected hangSub m_HangSub = new hangSub();
+  protected hangSub m_HangSub = hangSub.getInstance();
+
+  //init odometry thread
+  protected OdometryThread odometryThread = new OdometryThread();
 
   // init controllers
   protected ControllerManager mControllerManager = new ControllerManager();
@@ -43,33 +42,30 @@ public class RobotContainer {
 
 
   public RobotContainer() {
-    
+
     //NamedCommands.registerCommand("NAME TO REGISTER", new PrintCommand("action"));
 
+    //setup autochooser
     autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
-
     // setup drive
-    if (booleans.getRobot() == booleans.RobotType.REAL_ROBOT) {
-      m_Drive.setDefaultCommand(
+      mDrive.setDefaultCommand(
               new DriveCommand(
               mControllerManager::getX,
               mControllerManager::getY,
               mControllerManager::getRightX,
-              mControllerManager::getThrottleSwitch,
-              m_Drive));
-    } else {
-      m_Drive.setDefaultCommand(
-              new SimDriveCommand(
-              mControllerManager::getX,
-              mControllerManager::getY,
-              mControllerManager::getRightX,
-              m_Drive));
-    }
+              mDrive));
+  
 
     configureBindings();
-      
+
+    //setup odometry thread
+        //tell robot thread is for robot usage; not user usage
+    odometryThread.setDaemon(true);   
+    odometryThread.setName("Odometry Thread");  
+    odometryThread.start();
+ 
     
   }
     // controller bindings here
@@ -82,7 +78,7 @@ public class RobotContainer {
         .onFalse(new hangSub().Stop());
         
     // Auto aim and direct towards april tag in sight
-    // NOTE: overrides normal drive control !!! (to be tested)
+    //TODO: NOTE: overrides normal drive control !!!)
     mControllerManager
         .A()
         .and(m_Vision.TagInRange())
@@ -91,8 +87,7 @@ public class RobotContainer {
                 m_Vision::proportionalRange,
                 mControllerManager::getY,
                 m_Vision::proportionalAim,
-                mControllerManager::getThrottleSwitch,
-                m_Drive));
+                mDrive));
 
     // rumble driver whenever there is a hard collision
     collisionFeedback
@@ -107,13 +102,12 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
 
     try{
-     
       //load auto
       return autoChooser.getSelected();
 
     }catch (Exception e){
 
-      DriverStation.reportError("HERE!!!:" + e.getMessage(),  e.getStackTrace());
+      DriverStation.reportError("AUTO FAILED:" + e.getMessage(),  e.getStackTrace());
       return Commands.none();
 
     }

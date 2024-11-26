@@ -2,6 +2,8 @@ package com.team5430.vision;
 
 import com.team5430.vision.LimelightHelpers.LimelightResults;
 import com.team5430.vision.LimelightHelpers.LimelightTarget_Fiducial;
+
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.function.BooleanSupplier;
@@ -107,6 +109,22 @@ public class LimeLight {
   public void SetWantedIDs(int... Fiducials) {
     LimelightHelpers.SetFiducialIDFiltersOverride(LimelightName, Fiducials);
   }
+
+  //get pose for pose estimation with vision
+  public Pose2d getPose2d(double robotAngle){
+
+    LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue(LimelightName);
+
+    LimelightHelpers.SetRobotOrientation(LimelightName, robotAngle,0 , 0,0 , 0, 0);
+    return limelightMeasurement.pose;
+
+  }
+
+  //timestamp of pose
+  public double poseEstimateTimestamp(){
+    LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue(LimelightName);
+    return limelightMeasurement.timestampSeconds;
+  } 
 
   /** Proportional rotation value for turning */
   public double ProportinalAim(double MAX_OMEGA) {

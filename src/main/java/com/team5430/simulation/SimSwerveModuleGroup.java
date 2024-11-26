@@ -119,7 +119,7 @@ public class SimSwerveModuleGroup {
 
     public Rotation2d getRotation2d(){
         var twist = kinematics.toTwist2d(getPositions(true));
-        Rotation2d simRotation = new Rotation2d(twist.dtheta * .1);
+        Rotation2d simRotation = new Rotation2d(twist.dtheta * Math.PI);
         return simRotation;
     }
 }

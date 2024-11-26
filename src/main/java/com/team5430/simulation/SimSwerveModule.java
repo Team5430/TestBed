@@ -45,7 +45,7 @@ public class SimSwerveModule {
   public SwerveModulePosition getPosition(boolean refresh) {
     if (refresh) {
       this.position.angle = new Rotation2d(steerAngle);
-      this.position.distanceMeters = getSteerPosition()/ 6*Math.PI;
+      this.position.distanceMeters = getSteerPosition();
     }
     return this.position;
   }

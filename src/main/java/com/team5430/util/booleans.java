@@ -35,4 +35,8 @@ public class booleans {
     }
       return RobotType.REAL_ROBOT;
   }
+  
+  public static BooleanSupplier RobotisReal(){
+    return () -> getRobot() == RobotType.REAL_ROBOT;
+  }
 }

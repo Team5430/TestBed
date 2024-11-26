@@ -1,87 +1,72 @@
 package frc.robot.commands;
 
 import com.team5430.swerve.SwerveModuleConstants;
-import com.team5430.util.MathHelpers;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Drive.Drive;
+import frc.robot.subsystems.Drive;
+
 import java.util.function.DoubleSupplier;
 
 public class DriveCommand extends Command {
 
-  // subsystem to require
-  Drive mDrive;
+    // Subsystem to require
+    private final Drive mDrive;
 
-  // double suppliers for human inputs
-  DoubleSupplier xTranslation, yTranslation, rTranslation, ThrottleBreaker;
+    // Double suppliers for human inputs
+    private final DoubleSupplier xTranslation, yTranslation, rTranslation;
 
-  // TOGGLE PER PREFERENCE
-  Boolean FIELD_CENTRIC = false;
+    // Constants for swerve
+    private final SwerveModuleConstants constants = new SwerveModuleConstants();
 
-  // constants for swerve
-  SwerveModuleConstants constants;
+    /**
+     * Command for driving the simulated DriveTrain
+     * Same as DriveCommand, without any modifiers to inputs
+     *
+     * @param X x translation control
+     * @param Y y translation control
+     * @param Rotation rotational control
+     * @param subsystem drive subsystem that is required
+     */
+    public DriveCommand(
+            DoubleSupplier X,
+            DoubleSupplier Y,
+            DoubleSupplier Rotation,
+            Drive subsystem) {
+        this.xTranslation = X;
+        this.yTranslation = Y;
+        this.rTranslation = Rotation;
+        this.mDrive = subsystem;
 
-  // params
-  /**
-   * Command for driving the DriveTrain
-   *
-   * @param X x translation control
-   * @param Y y translation control
-   * @param Rotation rotational control
-   * @param breaking axis to utilise as a break
-   * @param subsystem drive subsystem that is required
-   */
-  public DriveCommand(
-      DoubleSupplier X,
-      DoubleSupplier Y,
-      DoubleSupplier Rotation,
-      DoubleSupplier breaking,
-      Drive subsystem) {
-    // get inputs
-    xTranslation = X;
-    yTranslation = Y;
-    rTranslation = Rotation;
-    ThrottleBreaker = breaking;
-    mDrive = subsystem;
+        // Require Drive subsystem
+        addRequirements(subsystem);
+    }
 
-    constants = new SwerveModuleConstants();
-    // require Drive subsystem
-    addRequirements(subsystem);
-  }
+    @Override
+    public void execute() {
+        // Get inputs
+        double x = xTranslation.getAsDouble();
+        double y = yTranslation.getAsDouble();
+        double rotation = rTranslation.getAsDouble();
 
-  @Override
-  public void execute() {
+        // Apply inputs; invert to regular axis 
+        ChassisSpeeds inputs = new ChassisSpeeds(
+               -y  * constants.MAX_VELOCITY_MPS,
+                -x  * constants.MAX_VELOCITY_MPS,
+                rotation * constants.MAX_OMEGA_RADIANS
+        );
 
-    // get inputs
-    double x = xTranslation.getAsDouble();
-    double y = yTranslation.getAsDouble();
-    double rotation = rTranslation.getAsDouble();
-    double breaking = MathHelpers.VariableSpeedDecline(ThrottleBreaker.getAsDouble());
+        // Drive with inputs
+        mDrive.control(inputs);
+    }
 
-    // setup for type of drivestyle
-    boolean DriveStyleToggle = FIELD_CENTRIC;
-    Rotation2d RobotAngle = mDrive.getRotation2d();
+    // Stop the drivetrain
+    @Override
+    public void end(boolean interrupted) {
+        mDrive.Stop();
+    }
 
-    // apply inputs
-    ChassisSpeeds Inputs =
-        new ChassisSpeeds(
-            x * breaking * constants.MAX_VELOCITY_MPS,
-            y * breaking * constants.MAX_VELOCITY_MPS,
-            rotation * constants.MAX_OMEGA_RADIANS);
-
-    // drive with inputs
-    mDrive.control(Inputs, RobotAngle, DriveStyleToggle);
-  }
-
-  // stop the drivetrain
-  @Override
-  public void end(boolean interrupted) {
-    mDrive.Stop();
-  }
-
-  @Override
-  public boolean isFinished() {
-    return false;
-  }
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
 }

@@ -11,6 +11,13 @@ public class hangSub extends SubsystemBase {
   protected TalonSRX L;
   protected TalonSRX R;
 
+
+  protected static hangSub mInstance = new hangSub();
+
+  public static hangSub getInstance(){
+    return mInstance;
+  }
+
   public hangSub() {
 
     // init motors
