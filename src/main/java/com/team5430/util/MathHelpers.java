@@ -33,6 +33,7 @@ public class MathHelpers {
     return wantedRad;
   }
 
+  @SuppressWarnings("unused")
   private final DoubleSupplier Zeroed =
           () -> 0;
 }

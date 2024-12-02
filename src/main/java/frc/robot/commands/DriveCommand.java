@@ -1,6 +1,5 @@
 package frc.robot.commands;
 
-import com.team5430.swerve.SwerveModuleConstants;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Drive;
@@ -14,9 +13,6 @@ public class DriveCommand extends Command {
 
     // Double suppliers for human inputs
     private final DoubleSupplier xTranslation, yTranslation, rTranslation;
-
-    // Constants for swerve
-    private final SwerveModuleConstants constants = new SwerveModuleConstants();
 
     /**
      * Command for driving the simulated DriveTrain
@@ -50,9 +46,9 @@ public class DriveCommand extends Command {
 
         // Apply inputs; invert to normal cordinate system 
         ChassisSpeeds inputs = new ChassisSpeeds(
-               -y  * constants.MAX_VELOCITY_MPS,
-                -x  * constants.MAX_VELOCITY_MPS,
-                rotation * constants.MAX_OMEGA_RADIANS
+               -y,
+                -x,
+                rotation
         );
 
         // Drive with inputs

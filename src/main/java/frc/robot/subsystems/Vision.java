@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.team5430.swerve.SwerveModuleConstants;
 import com.team5430.vision.LimeLight;
 
@@ -21,6 +23,8 @@ public class Vision extends SubsystemBase {
 
   protected static Vision mInstance = new Vision();
 
+    private final AtomicReference<Pose2d> pose2dRef = new AtomicReference<>(new Pose2d());
+
   public static Vision getInstance(){
     return mInstance;
   }
@@ -32,10 +36,18 @@ public class Vision extends SubsystemBase {
     return camera.AprilTagDetected;
   }
 
+
   //Megatag2 getter for pose !!!
   public Pose2d getPose2d(double robotAngle){
-    return camera.getPose2d(robotAngle);
+    Pose2d newPose = camera.getPose2d(robotAngle);
+    pose2dRef.set(newPose);
+    return newPose;
   }
+
+  // Get the latest pose in a thread-safe manner
+  public Pose2d getLatestPose() {
+      return pose2dRef.get();
+  }  
 
   /**timestamp of {@code getPose2d}*/
   public double getPoseTimestamp(){
@@ -56,6 +68,8 @@ public class Vision extends SubsystemBase {
   //update camera results 
     camera.updateResults();
     //TODO: modify periodic loop time for vison; add practical functionality to {@code Limelight.LEDs}
+
+
   }
 
 }

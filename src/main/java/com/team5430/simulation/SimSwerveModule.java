@@ -86,7 +86,7 @@ public class SimSwerveModule {
         return throttleSim.getAngularPositionRad();
     }
 
-    //these are good
+    //these are `
     public double getSteerVelocityRadPerSec() {
         return steerSim.getAngularVelocityRadPerSec();
     }
@@ -94,6 +94,7 @@ public class SimSwerveModule {
     public double getThrottleVelocityRadPerSec() {
         return throttleSim.getAngularVelocityRadPerSec();
     }
+
 
 }
 

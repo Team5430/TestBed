@@ -22,28 +22,18 @@ public class SwerveModuleGroup {
    *   TalonFX based motors
    * </pre>
    *
-   * <p>An example use case would be a ModuleCount of 3, where
-   *
-   * <pre>
-   * Module_1              Module_2:            Module_3:
-   *
-   *  SteeringCANid: 0     SteeringCANid: 2    SteeringCANid: 4
-   *  ThrottleCANid: 1     ThrottleCANid: 3    ThrottleCANid: 5
-   *  CANCoderCANid: 0     CANCoderCANid: 1    CANCoderCANid: 2
-   * </pre>
-   *
-   * <p>to configure this to your use case, utilize SwerveModuleConstants
+   * to configure this to your use case, utilize SwerveModuleConstants
    *
    * @param ModuleCount Allows creation of up to 4 SwerveModules, based on your given config
    * @param config Configuration for the swerve modules
    * @see com.team5430.swerve.SwerveModuleConstants
    */
   public SwerveModuleGroup(int ModuleCount, SwerveModuleConstants config) {
-    moduleCount = ModuleCount;
+    this.moduleCount = ModuleCount;
     for (int i = 0; i < moduleCount; i++) {
-      swerveModules[i] = new SwerveModule(i, config);
+      this.swerveModules[i] = new SwerveModule(i, config);
     }
-    constants = config;
+    this.constants = config;
   }
 
   /** Set Module States to desired state */
@@ -52,7 +42,7 @@ public class SwerveModuleGroup {
     SwerveDriveKinematics.desaturateWheelSpeeds(currentStates, constants.MAX_VELOCITY_MPS);
     // Apply states in a loop
     for (int i = 0; i < moduleCount; i++) {
-      swerveModules[i].setState(currentStates[i]);
+      this.swerveModules[i].setState(currentStates[i]);
     }
   }
 
@@ -73,7 +63,7 @@ public class SwerveModuleGroup {
    * @return the angle and velocity of the robot
    */
   public ChassisSpeeds getCurrentSpeeds() {
-    return constants.Kinematics.toChassisSpeeds(getStates(true));
+    return this.constants.Kinematics.toChassisSpeeds(getStates(true));
   }
 
   /** Stop all swerve modules */

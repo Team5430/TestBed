@@ -32,7 +32,7 @@ public class RobotContainer {
   protected hangSub m_HangSub = hangSub.getInstance();
 
   //init odometry thread
-  protected OdometryThread odometryThread = new OdometryThread();
+  protected OdometryThread odometryThread = new OdometryThread(mDrive, m_Vision);
 
   // init controllers
   protected ControllerManager mControllerManager = new ControllerManager();
@@ -62,9 +62,6 @@ public class RobotContainer {
     configureBindings();
 
     //setup odometry thread
-        //tell robot thread is for robot usage; not user usage
-    odometryThread.setDaemon(true);   
-    odometryThread.setName("Odometry Thread");  
     odometryThread.start();
  
     
@@ -79,7 +76,7 @@ public class RobotContainer {
         .onFalse(new hangSub().Stop());
         
     // Auto aim and direct towards april tag in sight
-    //TODO: NOTE: overrides normal drive control !!!)
+    //TODO: test -> NOTE: overrides normal drive control !!!)
     mControllerManager
         .A()
         .and(m_Vision.TagInRange())

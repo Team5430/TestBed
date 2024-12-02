@@ -9,97 +9,121 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Threads;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Vision;
 
-public class OdometryThread extends Thread{
-    
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
+
+public class OdometryThread implements Runnable {
+
+    private static final int THREAD_PRIORITY = 1;
+    private static final int SLEEP_DURATION_MS = 20;
+
     //init subsystems
-    protected Drive mDrive = Drive.getInstance();
+    private final Drive mDrive;
+    @SuppressWarnings("unused")
+    private final Vision mVision;
 
-    protected Vision mVision = Vision.getInstance();
 
-    //init pose estimator
-    protected SwerveDrivePoseEstimator mPoseEstimator;
+    private SwerveDrivePoseEstimator mPoseEstimator;
+    private final StructPublisher<Pose2d> mPublisher;
+    public AtomicReference<Pose2d> pose2dReference = new AtomicReference<>(new Pose2d());
 
-    //init for data reading !!!
-    StructPublisher<Pose2d> mPublisher;
+    //thread management
+    private final ExecutorService executorService;
+    private Future<?> future;
 
-    
-    public OdometryThread(){                
-
-        super();
-
+    public OdometryThread(Drive drive, Vision vision) {
+        this.mDrive = drive;
+        this.mVision = vision;
+        
+        //init publisher; publishes robot pose2d
+        this.mPublisher = NetworkTableInstance.getDefault()
+                .getStructTopic("/RobotPose", Pose2d.struct)
+                .publish();
+        this.executorService = Executors.newSingleThreadExecutor();
         configurePathPlanner();
-
-        mPublisher = NetworkTableInstance.getDefault()
-                     .getStructTopic("/RobotPose", Pose2d.struct)
-                     .publish();
     }
 
-    //get estimated robot pose on field
-    public Pose2d getPose2d(){
+ //starts the thread through executor service
+public void start() {
+    // Submit the thread and store in Future object
+    future = executorService.submit(this);
+}
+
+//stops the thread
+public void stop() {
+    // Cancel the task if it is running
+    if (future != null && !future.isDone()) {
+        future.cancel(true);
+    }
+    executorService.shutdownNow();
+}
+
+
+    //get pose2d
+    public Pose2d getPose2d() {
         if (mPoseEstimator != null) {
-            return mPoseEstimator.getEstimatedPosition();
+            pose2dReference.set(mPoseEstimator.getEstimatedPosition());
+            return pose2dReference.get();
         } else {
             return new Pose2d();
         }
     }
 
-    //reset robot pose if needed
-    public void resetPose2d(Pose2d poseSupplier){
-        if (mPoseEstimator != null) {
-            mPoseEstimator.resetPosition(mDrive.getRotation2d(), mDrive.getModulePositions(), poseSupplier);
-        }    
+    //reset pose2d
+    public void resetPose2d(Pose2d poseSupplier) {
+         mPoseEstimator.resetPosition(mDrive.getRotation2d(), mDrive.getModulePositions(), poseSupplier);
     }
+    
 
-    //pathplanner setup
-    private void configurePathPlanner(){
+    //configure path planner
+    private void configurePathPlanner() {
         AutoBuilder.configureHolonomic(
-            this::getPose2d,
-            this::resetPose2d,
-            mDrive::getCurrentSpeeds, 
-            mDrive::control, 
-            Constants.SwerveConstants.pathFollowerConfig,
-            booleans.isBlue(),
-            mDrive);
+                this::getPose2d,
+                this::resetPose2d,
+                mDrive::getCurrentSpeeds,
+                mDrive::control,
+                Constants.SwerveConstants.autoFollowerConfig,
+                booleans.isBlue(),
+                mDrive);
     }
 
     @Override
-    public void run(){
-        //setup poseEstimator on thread creation
-        Threads.setCurrentThreadPriority(true, 1);
+    public void run() {
+  
+    //threading settings
+        Thread.currentThread().setPriority(THREAD_PRIORITY);
+        Thread.currentThread().setName("OdometryThread");
+        Thread.currentThread().setDaemon(true);
 
-        mPoseEstimator = new SwerveDrivePoseEstimator
-                    (Constants.SwerveConstants.Kinematics, mDrive.getRotation2d(), mDrive.getModulePositions(), new Pose2d());
+        mPoseEstimator = new SwerveDrivePoseEstimator(
+                Constants.SwerveConstants.Kinematics, mDrive.getRotation2d(), mDrive.getModulePositions(), new Pose2d());
 
+                //vision std deviations
         mPoseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.5, .5, .7));
 
-
-        
-        //while not interupted
-        while(!Thread.currentThread().isInterrupted()){
-
+        //while thread is not interrupted
+        while (!Thread.currentThread().isInterrupted()) {
             try {
                 mPublisher.accept(getPose2d());
                 mPoseEstimator.update(mDrive.getRotation2d(), mDrive.getModulePositions());
 
-                // TODO: uncomment when simulating vision !!!
+                // TODO: uncomment when simulating vision
                 // mPoseEstimator.addVisionMeasurement(mVision.getPose2d(mDrive.getRotation2d().getDegrees()), mVision.getPoseTimestamp());
 
-                // Adjust sleep time for required update rate
-                Thread.sleep(20); // for example, 20 milliseconds update rate
+                //thread runs every 20ms
+                Thread.sleep(SLEEP_DURATION_MS);
 
             } catch (InterruptedException e) {
-                // Handle thread interruption (e.g., when stopping the thread)
                 Thread.currentThread().interrupt();
                 break;
             } catch (Exception e) {
-                // Report Error 
-                DriverStation.reportError("Odometry Thread:" + e.getMessage(), e.getStackTrace());
+                DriverStation.reportError("Odometry thread exception: " + e.getMessage(), true);
             }
         }
-        
     }
 }

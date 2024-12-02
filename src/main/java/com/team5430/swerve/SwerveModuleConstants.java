@@ -12,6 +12,7 @@ import com.ctre.phoenix6.configs.VoltageConfigs;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
@@ -26,7 +27,7 @@ public class SwerveModuleConstants {
   // Maximum angular velocity in radians per second
   public double MAX_OMEGA_RADIANS = 10;
 
-  // Radius of the drive base
+  // Radius of the drive base in meters
   public double DRIVE_BASE_RADIUS = 1;
 
   // Steering and throttle ratios
@@ -50,7 +51,6 @@ public class SwerveModuleConstants {
   // CAN IDs for encoders
   public int[] CANCODER_ID = {0, 1, 2, 3};
 
-//TODO: reason why control is so wierd
   // Module locations for kinematics calculations
   protected Translation2d[] ModuleLocations = {
           new Translation2d(0.267, 0.267), // Back left (A)
@@ -63,14 +63,21 @@ public class SwerveModuleConstants {
   public SwerveDriveKinematics Kinematics =
           new SwerveDriveKinematics(ModuleLocations);
 
-  // Autonomous speed configurations
-  public HolonomicPathFollowerConfig pathFollowerConfig =
+  // Autonomous speed configurations PATHPLANNER ONLY COMMENT OUT IF NOT NEEDED
+  public HolonomicPathFollowerConfig autoFollowerConfig =
           new HolonomicPathFollowerConfig(
                   new PIDConstants(1),            // Chassis PID constants
                   new PIDConstants(1),            // Theta PID constants
                   MAX_VELOCITY_MPS,               // Max velocity
                   DRIVE_BASE_RADIUS,              // Drive base radius
                   new ReplanningConfig());        // Replanning configurations
+
+  public PPHolonomicDriveController pathFollowerConfig = 
+          new PPHolonomicDriveController(
+                new PIDConstants(1),
+                new PIDConstants(1),
+                MAX_OMEGA_RADIANS,
+                DRIVE_BASE_RADIUS);
 
   /**
    * Generates configuration for the steering TalonFX.

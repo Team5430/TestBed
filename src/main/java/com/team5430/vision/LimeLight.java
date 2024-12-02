@@ -110,6 +110,7 @@ public class LimeLight {
     LimelightHelpers.SetFiducialIDFiltersOverride(LimelightName, Fiducials);
   }
 
+  
   //get pose for pose estimation with vision
   public Pose2d getPose2d(double robotAngle){
 
@@ -131,17 +132,11 @@ public class LimeLight {
 
     double kP = .35;
 
-    updateResults();
-
     double wantedAngleVelocity = tx * kP;
 
-    // convert to radians per second for our drive method
-    wantedAngleVelocity *= MAX_OMEGA;
-
     // invert since tx is positive when the target is to the right of the crosshair
-    wantedAngleVelocity *= -1.0;
-
-    return wantedAngleVelocity;
+    // and cap out at max angular velocity
+    return -wantedAngleVelocity * MAX_OMEGA ;
   }
 
   /** Proportinal speed to drive distance to tag */
@@ -149,13 +144,10 @@ public class LimeLight {
 
     double kP = .125;
 
-    updateResults();
-
     double wantedThrottleVelocity = ty * kP;
 
-    wantedThrottleVelocity *= MAX_MPS;
-
-    return wantedThrottleVelocity;
+    //cap out max velocity
+    return wantedThrottleVelocity * MAX_MPS;
   }
 
   /** Control your LEDs! */

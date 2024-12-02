@@ -76,6 +76,12 @@ public class SwerveModule {
     this.signals[3] = angularVelocity;
   }
 
+  public SwerveModule() {
+    this.drivePosition = null;
+    this.driveVelocity = null;
+    this.steeringPosition = null;
+    this.angularVelocity = null;
+  }
   /**
    * Configures the motors and encoder using the provided configuration constants.
    */

@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.team5430.simulation.SimAHRS;
 import com.team5430.simulation.SimSwerveModuleGroup;
 import com.team5430.swerve.SwerveModuleConstants;
@@ -13,6 +15,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -40,9 +43,10 @@ public class Drive extends SubsystemBase {
 
     private static Drive mInstance = new Drive(); 
 
+    public final AtomicReference<Rotation2d> rotation2dRef = new AtomicReference<>(new Rotation2d());
+
     public static Drive getInstance(){
         return mInstance;
-
     }
 
     public Drive() {
@@ -68,7 +72,12 @@ public class Drive extends SubsystemBase {
                         .publish();
 
                 break;
-        }
+            default:
+                DriverStation.reportError("Invalid Robot Type", true);
+                break;
+            
+
+            }
 
         ResetHeading();
     }
@@ -98,7 +107,7 @@ public class Drive extends SubsystemBase {
     }
 
     // Stops the DriveTrain
-    public void Stop() {
+    public synchronized void Stop() {
         new TernaryVoid(
             booleans.RobotisReal(),
             () -> driveTrain.Stop(),
@@ -107,14 +116,18 @@ public class Drive extends SubsystemBase {
     }
 
     // Zeros the gyro
-    public void ResetHeading() {
+    public synchronized void ResetHeading() {
         mGyro.reset();
     }
 
-    
+ 
     // Get heading as a Rotation2d
-    public Rotation2d getRotation2d() {
-        return mGyro != null ? mGyro.getRotation2d() : new Rotation2d(simDriveTrain.getAverageOmegaRadiansPerSecond(true));
+       public synchronized Rotation2d getRotation2d() {
+
+        var rotation2d = mGyro != null ? mGyro.getRotation2d() : new Rotation2d(simDriveTrain.getAverageOmegaRadiansPerSecond(true));
+            rotation2dRef.set(rotation2d);
+        return rotation2dRef.get();
+
     }
 
     @Override
