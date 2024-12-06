@@ -2,11 +2,11 @@ package frc.robot.subsystems;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.team5430.control.ControlSystem;
 import com.team5430.simulation.SimAHRS;
 import com.team5430.simulation.SimSwerveModuleGroup;
 import com.team5430.swerve.SwerveModuleConstants;
 import com.team5430.swerve.SwerveModuleGroup;
-import com.team5430.util.ControlSystem;
 import com.team5430.util.TernaryVoid;
 import com.team5430.util.booleans;
 
@@ -124,8 +124,15 @@ public class Drive extends SubsystemBase implements ControlSystem {
 
     @Override
     //run and rotate slowly
-    public void configureTest(){
-        control(new ChassisSpeeds(.1, .1, 1));
+    public boolean configureTest(){
+        try {
+            control(new ChassisSpeeds(.1, .1, 1));
+            DriverStation.reportWarning("Drive Test Succeeded", false);
+            return true;
+        } catch (Exception e) {
+            DriverStation.reportError("Drive Test Failed: " + e.getMessage(), true);
+            return false;
+        }
     }
 
     @Override 

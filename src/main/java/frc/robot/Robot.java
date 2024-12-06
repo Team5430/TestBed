@@ -64,6 +64,7 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
+    m_robotContainer.configureTests();
   }
 
   @Override
@@ -73,5 +74,7 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {}
 
   @Override
-  public void testExit() {}
+  public void testExit() {
+    m_robotContainer.Stop();
+  }
 }

@@ -1,4 +1,4 @@
-package com.team5430.util;
+package com.team5430.control;
 
 /*
  *
@@ -12,7 +12,9 @@ public interface ControlSystem {
 
      default void Stop(){}
 
-     default void configureTest(){}
+     default boolean configureTest(){
+               return true;
+          }
 
      default void configurePeriodic(){}
 

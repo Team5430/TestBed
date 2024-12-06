@@ -4,11 +4,15 @@
 
 package frc.robot;
 
+import java.util.List;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.team5430.control.CollisionDetection;
+import com.team5430.control.ControlSystem;
 import com.team5430.control.ControllerManager;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -25,6 +29,8 @@ public class RobotContainer {
     private final SendableChooser<Command> autoChooser;
 
   // init subsystems
+  List<ControlSystem> controlSystems = List.of(Drive.getInstance(), hangSub.getInstance());
+
   protected Drive mDrive = Drive.getInstance();
 
   protected Vision m_Vision = Vision.getInstance();
@@ -97,10 +103,23 @@ public class RobotContainer {
     // new Trigger(() -> m_Drive.getPose().getX() > 10).onTrue(new PrintCommand("tracking"));
   }
 
+  // configure tests for each control system
   public void configureTests(){
+
+    //run tests for each control system
+    for (ControlSystem controlSystem : controlSystems) {
+      SmartDashboard.putBoolean(controlSystem.getClass().getSimpleName(), controlSystem.configureTest());
+    }
 
   }
 
+  // stop all control systems
+  public void Stop(){
+    mDrive.Stop();
+    m_HangSub.Stop();
+  }
+
+  // get auto command
   public Command getAutonomousCommand() {
 
     try{
