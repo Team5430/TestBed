@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.team5430.swerve.SwerveModuleConstants;
 import com.team5430.vision.LimeLight;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -56,11 +55,11 @@ public class Vision extends SubsystemBase {
 
   // math w/ camera
   public double proportionalAim() {
-    return camera.ProportinalAim(new SwerveModuleConstants().MAX_OMEGA_RADIANS);
+    return camera.ProportinalAim(Constants.SwerveConstants.MAX_OMEGA_RADIANS);
   }
 
   public double proportionalRange() {
-    return camera.ProportinalRange(new SwerveModuleConstants().MAX_VELOCITY_MPS);
+    return camera.ProportinalRange(Constants.SwerveConstants.MAX_VELOCITY_MPS);
   }
 
   @Override

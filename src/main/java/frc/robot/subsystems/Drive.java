@@ -6,6 +6,7 @@ import com.team5430.simulation.SimAHRS;
 import com.team5430.simulation.SimSwerveModuleGroup;
 import com.team5430.swerve.SwerveModuleConstants;
 import com.team5430.swerve.SwerveModuleGroup;
+import com.team5430.util.ControlSystem;
 import com.team5430.util.TernaryVoid;
 import com.team5430.util.booleans;
 
@@ -21,7 +22,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 
-public class Drive extends SubsystemBase {
+public class Drive extends SubsystemBase implements ControlSystem {
 
 //TODO: make it look pretty !!!
 //TODO: fix Rotation2d in simulation (works but not as intended)
@@ -101,18 +102,10 @@ public class Drive extends SubsystemBase {
         ? driveTrain.getPositions(true) : simDriveTrain.getPositions(true);
     }
 
+    //get robot input chassis speeds 
     public ChassisSpeeds getCurrentSpeeds(){
         return Robot.isReal() 
         ? driveTrain.getCurrentSpeeds() : simDriveTrain.getCurrentSpeeds();
-    }
-
-    // Stops the DriveTrain
-    public synchronized void Stop() {
-        new TernaryVoid(
-            booleans.RobotisReal(),
-            () -> driveTrain.Stop(),
-            () -> simDriveTrain.stop()
-        );
     }
 
     // Zeros the gyro
@@ -120,7 +113,6 @@ public class Drive extends SubsystemBase {
         mGyro.reset();
     }
 
- 
     // Get heading as a Rotation2d
        public synchronized Rotation2d getRotation2d() {
 
@@ -131,16 +123,25 @@ public class Drive extends SubsystemBase {
     }
 
     @Override
-    public void simulationPeriodic(){
+    //run and rotate slowly
+    public void configureTest(){
+        control(new ChassisSpeeds(.1, .1, 1));
+    }
 
-        //update gyro sim
-        mGyro.yaw.set(simDriveTrain.getRotation2d().getDegrees());
-        
-        // Update the simulated drive train positions
+    @Override 
+    public void configurePeriodic(){
         simDriveTrain.updateSim();
-        mPublisher.set(simDriveTrain.getStates(true));
-        
-        
+        mGyro.yaw.set(getRotation2d().getDegrees());
+    }
+           
+    // Stops the DriveTrain
+    @Override
+    public synchronized void Stop() {
+        new TernaryVoid(
+            booleans.RobotisReal(),
+            () -> driveTrain.Stop(),
+            () -> simDriveTrain.stop()
+        );
     }
    
 }

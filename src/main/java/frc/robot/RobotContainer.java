@@ -73,7 +73,7 @@ public class RobotContainer {
     mControllerManager
         .LeftBumper()
         .onTrue(new hangSub().Down())
-        .onFalse(new hangSub().Stop());
+        .onFalse(new InstantCommand(m_HangSub::Stop));
         
     // Auto aim and direct towards april tag in sight
     //TODO: test -> NOTE: overrides normal drive control !!!)
@@ -95,6 +95,10 @@ public class RobotContainer {
 
     // use for any object detection when doing camera work?
     // new Trigger(() -> m_Drive.getPose().getX() > 10).onTrue(new PrintCommand("tracking"));
+  }
+
+  public void configureTests(){
+
   }
 
   public Command getAutonomousCommand() {
