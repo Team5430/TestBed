@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class OdometryThread implements Runnable {
 
-    private static final int THREAD_PRIORITY = 1;
     private static final int SLEEP_DURATION_MS = 20;
 
     //init subsystems
@@ -27,24 +26,27 @@ public class OdometryThread implements Runnable {
     @SuppressWarnings("unused")
     private final Vision mVision;
 
-
-    private SwerveDrivePoseEstimator mPoseEstimator;
     private final StructPublisher<Pose2d> mPublisher;
-    public AtomicReference<Pose2d> pose2dReference = new AtomicReference<>(new Pose2d());
+        
+    private SwerveDrivePoseEstimator mPoseEstimator;
+    public AtomicReference<Pose2d> pose2dReference = new AtomicReference<Pose2d>(getPose2d());
 
     //thread management
     private final ExecutorService executorService;
     private Future<?> future;
 
     public OdometryThread(Drive drive, Vision vision) {
+        this.executorService = Executors.newSingleThreadExecutor();
         this.mDrive = drive;
         this.mVision = vision;
-        
+
         //init publisher; publishes robot pose2d
-        this.mPublisher = NetworkTableInstance.getDefault()
-                .getStructTopic("/RobotPose", Pose2d.struct)
-                .publish();
-        this.executorService = Executors.newSingleThreadExecutor();
+        mPublisher = NetworkTableInstance.getDefault()
+        .getStructTopic("/RobotPose", Pose2d.struct)
+        .publish();
+
+        
+        //configure path planner
         configurePathPlanner();
     }
 
@@ -66,12 +68,9 @@ public void stop() {
 
     //get pose2d
     public Pose2d getPose2d() {
-        if (mPoseEstimator != null) {
-            pose2dReference.set(mPoseEstimator.getEstimatedPosition());
-            return pose2dReference.get();
-        } else {
-            return new Pose2d();
-        }
+
+        return pose2dReference == null ? new Pose2d() : pose2dReference.get();
+
     }
 
     //reset pose2d
@@ -94,11 +93,9 @@ public void stop() {
 
     @Override
     public void run() {
-  
-    //threading settings
-        Thread.currentThread().setPriority(THREAD_PRIORITY);
-        Thread.currentThread().setName("OdometryThread");
-        Thread.currentThread().setDaemon(true);
+        DriverStation.reportWarning("Odometry thread started", false);
+        //threading settings
+        Thread.currentThread().setName("Odometry Thread");
 
         mPoseEstimator = new SwerveDrivePoseEstimator(
                 Constants.SwerveConstants.Kinematics, mDrive.getRotation2d(), mDrive.getModulePositions(), new Pose2d());
@@ -107,11 +104,15 @@ public void stop() {
         mPoseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.5, .5, .7));
 
         //while thread is not interrupted
-        while (!Thread.currentThread().isInterrupted()) {
+        while (true) {
+
             try {
-                mPublisher.accept(getPose2d());
+
                 mPoseEstimator.update(mDrive.getRotation2d(), mDrive.getModulePositions());
 
+                pose2dReference.set(mPoseEstimator.getEstimatedPosition());
+
+                mPublisher.set(pose2dReference.get());
                 // TODO: uncomment when simulating vision
                 // mPoseEstimator.addVisionMeasurement(mVision.getPose2d(mDrive.getRotation2d().getDegrees()), mVision.getPoseTimestamp());
 

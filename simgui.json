@@ -47,7 +47,8 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Auto Chooser": "String Chooser",
-      "/SmartDashboard/Gyroscope": "Gyro"
+      "/SmartDashboard/Gyroscope": "Gyro",
+      "/SmartDashboard/Test Chooser": "String Chooser"
     }
   },
   "NetworkTables": {

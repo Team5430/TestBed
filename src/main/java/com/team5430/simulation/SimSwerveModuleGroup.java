@@ -12,6 +12,9 @@ public class SimSwerveModuleGroup {
     private int moduleCount;
     private SwerveDriveKinematics kinematics;
 
+    double yaw;
+
+
     //pretty much the same thing as the real one
     /**
      * Initialize the simulation-based swerve module group.
@@ -103,6 +106,7 @@ public class SimSwerveModuleGroup {
         for(SimSwerveModule s: simSwerveModules){
             s.updateSim(0.020);
         }
+
     }
 
     /**
@@ -114,7 +118,13 @@ public class SimSwerveModuleGroup {
     public double getAverageOmegaRadiansPerSecond(boolean refresh) {
         SwerveModuleState[] states = getStates(refresh);
         var speeds = kinematics.toChassisSpeeds(states);
-        return speeds.omegaRadiansPerSecond;
+        return speeds.omegaRadiansPerSecond * Math.PI/180;
+    }
+
+    public double getYaw(){
+        //multiplied my 1000 milliseconds to get the yaw in degrees
+        yaw += getAverageOmegaRadiansPerSecond(false) * 1000;
+        return yaw;
     }
 
     public Rotation2d getRotation2d(){

@@ -7,21 +7,29 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class ControllerManager {
 
-  CommandJoystick DriverJoystick;
-  CustomXboxController coPilotController;
-  // deadzone
-  double axisThreshold = .3;
-  //  1/100th of a second  from 0 to 100%
-  double mRate = 100;
-
-  SlewRateLimiter Xoptimize = new SlewRateLimiter(mRate);
-  SlewRateLimiter Yoptimize = new SlewRateLimiter(mRate);
-  SlewRateLimiter Roptimize = new SlewRateLimiter(mRate);
-
-  // init controllers
-  public ControllerManager() {
-    DriverJoystick = new CommandJoystick(0);
-    coPilotController = new CustomXboxController(1);
+  static ControllerManager instance;
+  static CommandJoystick DriverJoystick;
+  static CustomXboxController coPilotController;
+    // deadzone
+    double axisThreshold = .3;
+    //  1/100th of a second  from 0 to 100%
+    double mRate = 100;
+  
+    SlewRateLimiter Xoptimize = new SlewRateLimiter(mRate);
+    SlewRateLimiter Yoptimize = new SlewRateLimiter(mRate);
+    SlewRateLimiter Roptimize = new SlewRateLimiter(mRate);
+  
+    // init controllers
+    private ControllerManager() {
+      DriverJoystick = new CommandJoystick(0);
+      coPilotController = new CustomXboxController(1);
+    }
+  
+    public static ControllerManager getInstance() {
+      if (instance == null) {
+        instance = new ControllerManager();
+      }
+      return instance;
   }
 
   // Driver Controls

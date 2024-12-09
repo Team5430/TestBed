@@ -8,21 +8,30 @@ import java.util.function.BooleanSupplier;
 
 public class CollisionDetection {
   // TODO Test in real life to see performance
-  BuiltInAccelerometer accelerometer;
-  // threshold to be tuned for robot
-  double CollisionThreshold = .3f;
-
-  double PreviousLinearXAccel;
-
-  double PreviousLinearYAccel;
-  // filters to average out output to mitigate noise
-  LinearFilter xFilter = LinearFilter.movingAverage(10);
-
-  LinearFilter yFilter = LinearFilter.movingAverage(10);
-
-  /** Collision Detection based on RIO's accelerometer! */
-  public CollisionDetection() {
-    accelerometer = new BuiltInAccelerometer();
+  private static CollisionDetection instance;
+  
+    static BuiltInAccelerometer accelerometer;
+    // threshold to be tuned for robot
+    double CollisionThreshold = .3f;
+  
+    double PreviousLinearXAccel;
+  
+    double PreviousLinearYAccel;
+    // filters to average out output to mitigate noise
+    LinearFilter xFilter = LinearFilter.movingAverage(10);
+  
+    LinearFilter yFilter = LinearFilter.movingAverage(10);
+  
+    /** Collision Detection based on RIO's accelerometer! */
+    private CollisionDetection() {
+      accelerometer = new BuiltInAccelerometer();
+    }
+  
+    public static CollisionDetection getInstance() {
+      if (instance == null) {
+      instance = new CollisionDetection();
+    }
+    return instance;
   }
 
   // use if needed for triggers

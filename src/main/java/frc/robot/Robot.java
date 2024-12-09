@@ -43,7 +43,7 @@ public class Robot extends TimedRobot {
 
      var m_Auto = m_robotContainer.getAutonomousCommand();
 
-        m_Auto.execute();
+        m_Auto.schedule();
   }
 
   @Override
@@ -69,6 +69,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void simulationInit() {}
+
+  @Override 
+  public void simulationPeriodic(){
+  }
 
   @Override
   public void testPeriodic() {}

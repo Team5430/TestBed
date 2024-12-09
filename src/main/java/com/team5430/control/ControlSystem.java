@@ -1,21 +1,29 @@
 package com.team5430.control;
 
-/*
+import edu.wpi.first.wpilibj2.command.Subsystem;
+
+/**
  *
- * A standard for subsystem to implement if they are some sort of mechanism,
+ * A standard for subsystems to implement if they are some sort of mechanism,
  * as to be able to quickly manipulate them in different situations.
  *  
  */
-public interface ControlSystem {
-    
-     public boolean hasEmergency = true; 
+public abstract class ControlSystem implements Subsystem{
 
-     default void Stop(){}
+     static ControlSystem getInstance(){
+        return null;
+      }
 
-     default boolean configureTest(){
-               return true;
-          }
+     public boolean hasEmergency = false; 
 
-     default void configurePeriodic(){}
+     //stop the subsystem
+     public abstract void Stop();
+
+     // Configure the subsystem for testing
+     public abstract boolean configureTest();
+
+      // Check the status of the subsystem
+    public abstract boolean checkStatus();
+
 
 }

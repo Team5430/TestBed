@@ -7,9 +7,8 @@ import com.team5430.control.ControlSystem;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class hangSub extends SubsystemBase implements ControlSystem {
+public class hangSub extends ControlSystem {
 
   protected TalonSRX L;
   protected TalonSRX R;
@@ -61,6 +60,12 @@ public class hangSub extends SubsystemBase implements ControlSystem {
   public void Stop() {
     L.set(ControlMode.PercentOutput, 0);
     R.set(ControlMode.PercentOutput, 0);
+  }
+
+  //any problems will appear with the motors
+  @Override
+  public boolean checkStatus() {
+    return true;
   }
 
 
