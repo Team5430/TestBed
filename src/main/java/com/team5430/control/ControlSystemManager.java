@@ -16,6 +16,7 @@ public class ControlSystemManager {
         this.controlSystems = new ArrayList<ControlSystem>();
         }
     
+        //get instance
         public static ControlSystemManager getInstance() {
             if (instance == null) {
                 instance = new ControlSystemManager();
@@ -23,6 +24,7 @@ public class ControlSystemManager {
             return instance;
         }
     
+        //add control systems to the list
         public ControlSystemManager addControlSystem(ControlSystem... cs){
             if (instance == null) {
                 instance = getInstance();
@@ -33,6 +35,7 @@ public class ControlSystemManager {
             }
             return instance;
         }
+
     
         public static SendableChooser<Boolean> buildTestChooser() {
             SendableChooser<Boolean> controlSystemChooser = new SendableChooser<Boolean>();
@@ -54,12 +57,14 @@ public class ControlSystemManager {
             testAll = testAll && cs.configureTest();
         }
 
-
-        controlSystemChooser.addOption("Test All Control Systems [MAKE SURE ROBOT IS ON BLOCKS]", testAll);
+        //add option to test all systems
+        controlSystemChooser.addOption("Test All Systems [MAKE SURE ROBOT IS ON BLOCKS]", testAll);
 
         return controlSystemChooser;
+
         }
 
+        //stop all control systems concurrently
         public void stopAll(){
             for (ControlSystem cs : controlSystems) {
                 cs.Stop();

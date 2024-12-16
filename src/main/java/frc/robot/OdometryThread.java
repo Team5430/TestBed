@@ -87,7 +87,7 @@ public void stop() {
                 mDrive::getCurrentSpeeds,
                 mDrive::control,
                 Constants.SwerveConstants.autoFollowerConfig,
-                booleans.isBlue(),
+                booleans.shouldFlip(),
                 mDrive);
     }
 

@@ -2,7 +2,10 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+
 import com.team5430.control.ControlSystem;
+
+import frc.robot.Constants;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -12,7 +15,7 @@ public class hangSub extends ControlSystem {
 
   protected TalonSRX L;
   protected TalonSRX R;
-
+ 
 
   protected static hangSub mInstance = new hangSub();
 
@@ -20,11 +23,13 @@ public class hangSub extends ControlSystem {
     return mInstance;
   }
 
+  
   public hangSub() {
 
     // init motors
-    L = new TalonSRX(10);
-    R = new TalonSRX(11);
+    L = new TalonSRX(Constants.CANConstants.LeftHangMotor);
+    R = new TalonSRX(Constants.CANConstants.RightHangMotor);
+    
     // invert motor
     R.setInverted(true);
   }

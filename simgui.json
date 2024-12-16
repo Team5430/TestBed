@@ -46,6 +46,7 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Tests/Test Control Systems": "String Chooser",
       "/SmartDashboard/Auto Chooser": "String Chooser",
       "/SmartDashboard/Gyroscope": "Gyro",
       "/SmartDashboard/Test Chooser": "String Chooser"

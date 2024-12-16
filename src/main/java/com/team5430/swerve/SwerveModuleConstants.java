@@ -28,7 +28,7 @@ public class SwerveModuleConstants {
   public double MAX_OMEGA_RADIANS = 10;
 
   // Radius of the drive base in meters
-  public double DRIVE_BASE_RADIUS = 1;
+  public double DRIVE_BASE_RADIUS = .567;
 
   // Steering and throttle ratios
   public double steerRatio = 150/7;
@@ -66,8 +66,8 @@ public class SwerveModuleConstants {
   // Autonomous speed configurations PATHPLANNER ONLY COMMENT OUT IF NOT NEEDED
   public HolonomicPathFollowerConfig autoFollowerConfig =
           new HolonomicPathFollowerConfig(
-                  new PIDConstants(1),            // Chassis PID constants
-                  new PIDConstants(1),            // Theta PID constants
+                  new PIDConstants(5),            // Chassis PID constants
+                  new PIDConstants(2),            // Theta PID constants
                   MAX_VELOCITY_MPS,               // Max velocity
                   DRIVE_BASE_RADIUS,              // Drive base radius
                   new ReplanningConfig());        // Replanning configurations
@@ -99,7 +99,7 @@ public class SwerveModuleConstants {
                     // Motion magic configuration for cruise velocity, acceleration, with expo
                     new MotionMagicConfigs()
                             .withMotionMagicCruiseVelocity(100 / steerRatio)
-                            .withMotionMagicAcceleration((100 / steerRatio)/.1)
+                            .withMotionMagicAcceleration((100 / steerRatio)/ .1)
                             .withMotionMagicExpo_kV(.12 * steerRatio)
                             .withMotionMagicExpo_kA(.1))
             .withClosedLoopGeneral(continuousWrapConfig)

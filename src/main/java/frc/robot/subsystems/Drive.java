@@ -2,8 +2,8 @@ package frc.robot.subsystems;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.kauailabs.navx.frc.AHRS;
 import com.team5430.control.ControlSystem;
-import com.team5430.simulation.SimAHRS;
 import com.team5430.simulation.SimSwerveModuleGroup;
 import com.team5430.swerve.SwerveModuleConstants;
 import com.team5430.swerve.SwerveModuleGroup;
@@ -18,6 +18,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.SPI.Port;
 import frc.robot.Constants;
 import frc.robot.Robot;
@@ -25,7 +26,6 @@ import frc.robot.Robot;
 public class Drive extends ControlSystem {
 
 //TODO: make it look pretty !!!
-//TODO: fix Rotation2d in simulation (works but not as intended)
     // Swerve Config
     private final SwerveModuleConstants mConfig = Constants.SwerveConstants;
 
@@ -41,7 +41,7 @@ public class Drive extends ControlSystem {
     boolean isFieldCentric = true;
 
     // Gyro
-    public SimAHRS mGyro;
+    public AHRS mGyro;
 
     private static Drive mInstance = new Drive(); 
 
@@ -52,19 +52,17 @@ public class Drive extends ControlSystem {
     }
 
     private Drive() {
-
+//TODO: maybe a system wide robot type in @RobotContainer (???)
         // Initialize based on robot type
         switch (booleans.getRobot()) {
             case REAL_ROBOT:
-                mGyro = new SimAHRS(Port.kMXP);
+                mGyro = new AHRS(Port.kMXP);
                 driveTrain = new SwerveModuleGroup(4, mConfig);
     
                 break;
 
             case SIM_ROBOT:
-                //init sim gyro
-                mGyro = new SimAHRS();
-                mGyro.initSim();
+            
 
                 //create sim drivetrain
                 simDriveTrain = new SimSwerveModuleGroup(4, mConfig.Kinematics);
@@ -79,6 +77,7 @@ public class Drive extends ControlSystem {
                         .publish();        
 
                 break;
+
             default:
                 DriverStation.reportError("Invalid Robot Type", true);
                 break;
@@ -105,13 +104,15 @@ public class Drive extends ControlSystem {
 
     // Zeros the gyro
     public synchronized void ResetHeading() {
+        if (mGyro != null)
         mGyro.reset();
     }
-
+    
+//getters
     // Get heading as a Rotation2d
        public synchronized Rotation2d getRotation2d() {
 
-        var rotation2d = mGyro != null ? mGyro.getRotation2d() : new Rotation2d(simDriveTrain.getRotation2d().getDegrees());
+        var rotation2d = mGyro != null ? mGyro.getRotation2d() : simDriveTrain.getRotation2d();
             rotation2dRef.set(rotation2d);
         return rotation2dRef.get();
 
@@ -129,20 +130,26 @@ public class Drive extends ControlSystem {
         ? driveTrain.getCurrentSpeeds() : simDriveTrain.getCurrentSpeeds();
     }
 
-    
+//control system implementation
     @Override
     //run and rotate slowly
     public boolean configureTest(){
+
+    if(RobotState.isTest()){
         try {
-            control(new ChassisSpeeds(.1, .1, 1));
-            DriverStation.reportWarning("Drive Test Succeeded", false);
-            return true;
-        } catch (Exception e) {
-            DriverStation.reportError("Drive Test Failed: " + e.getMessage(), true);
-            return false;
+                control(new ChassisSpeeds(.1, .1, 1));
+                DriverStation.reportWarning("Drive Test Succeeded", false);
+                return true;
+            } catch (Exception e) {
+                DriverStation.reportError("Drive Test Failed: " + e.getMessage(), true);
+                return false;
+            }
         }
+        
+        return false;
     }
 
+    //check if gyro and drivetrain are connected
     @Override
     public boolean checkStatus() {
         if(mGyro == null || driveTrain == null) return false;
@@ -153,19 +160,14 @@ public class Drive extends ControlSystem {
     // Stops the DriveTrain
     @Override
     public synchronized void Stop() {
-        new TernaryVoid(
-            booleans.RobotisReal(),
-                () -> driveTrain.Stop(),
-                () -> simDriveTrain.stop()
-            );
+        if (Robot.isReal()) driveTrain.Stop();
         }
-   
+
+
     //sim updating
     @Override 
     public void simulationPeriodic(){
-        simDriveTrain.updateSim();        
-        mGyro.yaw.set(simDriveTrain.getYaw());
         mPublisher.set(simDriveTrain.getStates(true));
-        mGyroPublisher.set(mGyro.getRotation2d());
+        mGyroPublisher.set(getRotation2d());
     }
 }

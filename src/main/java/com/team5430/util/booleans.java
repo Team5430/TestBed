@@ -14,13 +14,20 @@ public class booleans {
     REAL_ROBOT,
   }
 
-  public static BooleanSupplier isBlue() {
-    return () -> {
+  public static BooleanSupplier shouldFlip() {
+    return   () -> {
+      // Boolean supplier that controls when the path will be mirrored for the red alliance
+      // This will flip the path being followed to the red side of the field.
+      // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
       var alliance = DriverStation.getAlliance();
-      return alliance.filter(color -> color == DriverStation.Alliance.Blue).isPresent();
+      if (alliance.isPresent()) {
+        return alliance.get() == DriverStation.Alliance.Red;
+      }
+      return false;  
     };
   }
-
+  
   public static BooleanSupplier isTeleop() {
     return DriverStation::isTeleop;
   }

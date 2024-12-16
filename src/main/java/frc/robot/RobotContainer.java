@@ -5,17 +5,17 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+
 import com.team5430.control.CollisionDetection;
 import com.team5430.control.ControllerManager;
 import com.team5430.control.ControlSystemManager;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+
 import frc.robot.commands.DriveCommand;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.hangSub;
@@ -39,8 +39,10 @@ public class RobotContainer {
       
       protected ControllerManager mControllerManager;
       private CollisionDetection collisionFeedback;
+
+      
     
-      public RobotContainer() {
+    public RobotContainer() {
     //init  
         //init subsystems
         mDrive = Drive.getInstance();
@@ -119,31 +121,23 @@ public class RobotContainer {
     
       // configure tests for each control system
       public void configureTests(){
+
         var TestTab = Shuffleboard.getTab("Tests");
-        TestTab.add("Test All Control Systems", testChooser);
+        TestTab.add("Test Control Systems", testChooser);
+
+        //  for use of when alerts ? -> new Trigger(testChooser::getSelected).onTrue(new Alert.set("Test"));
         SmartDashboard.putBoolean("TEST RESULT:", testChooser.getSelected());       
       }
-
-
 
       // stops and resets all control systems
       public void Stop(){
         controlSystemManager.stopAll();
       }
 
-  // get auto command
-  public Command getAutonomousCommand() {
+      // get auto command
+      public Command getAutonomousCommand(){
+        return autoChooser.getSelected();
+      }
 
-    try{
-      //load auto
-      return autoChooser.getSelected(); 
-
-    }catch (Exception e){
-
-      DriverStation.reportError("AUTO FAILED:" + e.getMessage(),  e.getStackTrace());
-      return Commands.none();
-
-    }
-
-  }
+  
 }

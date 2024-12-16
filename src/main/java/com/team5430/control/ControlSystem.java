@@ -14,13 +14,14 @@ public abstract class ControlSystem implements Subsystem{
         return null;
       }
 
+      //do some logic with this 
      public boolean hasEmergency = false; 
 
      //stop the subsystem
      public abstract void Stop();
 
      // Configure the subsystem for testing
-     public abstract boolean configureTest();
+      public abstract boolean configureTest();
 
       // Check the status of the subsystem
     public abstract boolean checkStatus();

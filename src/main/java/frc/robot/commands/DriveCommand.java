@@ -6,6 +6,7 @@ import frc.robot.subsystems.Drive;
 
 import java.util.function.DoubleSupplier;
 
+
 public class DriveCommand extends Command {
 
     // Subsystem to require
@@ -44,18 +45,20 @@ public class DriveCommand extends Command {
         double y = yTranslation.getAsDouble();
         double rotation = rTranslation.getAsDouble();
 
+    //TODO: the multipliier is meant to be the max speed of the robot -> better way to do so?
+    
         // Apply inputs; invert to normal cordinate system 
         ChassisSpeeds inputs = new ChassisSpeeds(
-               -y,
-                -x,
-                rotation
+               -y* 5,
+                -x * 5,
+                rotation * 5
         );
 
         // Drive with inputs
         mDrive.control(inputs);
     }
 
-    // Stop the drivetrain pm emd
+    // Stop the drivetrain on end
     @Override
     public void end(boolean interrupted) {
         mDrive.Stop();

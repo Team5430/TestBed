@@ -12,7 +12,9 @@ public class SimSwerveModuleGroup {
     private int moduleCount;
     private SwerveDriveKinematics kinematics;
 
-    double yaw;
+
+    private Rotation2d robotAngle;
+    private SwerveModulePosition[] deltaPositions;
 
 
     //pretty much the same thing as the real one
@@ -24,9 +26,16 @@ public class SimSwerveModuleGroup {
     public SimSwerveModuleGroup(int moduleCount, SwerveDriveKinematics kinematics) {
         this.moduleCount = moduleCount;
         this.kinematics = kinematics;
+
+        this.robotAngle = Rotation2d.fromDegrees(0);
+
+        this.deltaPositions = new SwerveModulePosition[moduleCount];
+
         for (int i = 0; i < moduleCount; i++) {
             simSwerveModules[i] = new SimSwerveModule();
+            deltaPositions[i] = new SwerveModulePosition(0, new Rotation2d(0));
         }
+     
     }
 
     /**
@@ -36,7 +45,7 @@ public class SimSwerveModuleGroup {
     public void setStates(SwerveModuleState... states) {
         SwerveDriveKinematics.desaturateWheelSpeeds(states, 3.0); // Example max velocity
         for (int i = 0; i < moduleCount; i++) {
-            simSwerveModules[i].setState(states[i]);
+            simSwerveModules[i].updateStateAndPosition(states[i]);
         }
     }
 
@@ -59,16 +68,6 @@ public class SimSwerveModuleGroup {
     }
 
     /**
-     * Stop all the swerve modules.
-     */
-    public void stop() {
-        for (SimSwerveModule module : simSwerveModules) {
-            module.setThrottleSpeed(0);
-            module.setSteerAngle(0);
-        }
-    }
-
-    /**
      * Get the current speeds of the robot.
      * @return Current chassis speeds
      */
@@ -84,7 +83,7 @@ public class SimSwerveModuleGroup {
     public SwerveModulePosition[] getPositions(boolean refresh) {
         SwerveModulePosition[] positions = new SwerveModulePosition[moduleCount];
         for (int i = 0; i < moduleCount; i++) {
-            positions[i] = simSwerveModules[i].getPosition(refresh);
+            positions[i] = simSwerveModules[i].getPosition();
         }
         return positions;
     }
@@ -97,39 +96,29 @@ public class SimSwerveModuleGroup {
     public SwerveModuleState[] getStates(boolean refresh) {
         SwerveModuleState[] states = new SwerveModuleState[moduleCount];
         for (int i = 0; i < moduleCount; i++) {
-            states[i] = simSwerveModules[i].getState(refresh);
+            states[i] = simSwerveModules[i].getState();
         }
         return states;
     }
 
-    public void updateSim(){
-        for(SimSwerveModule s: simSwerveModules){
-            s.updateSim(0.020);
+    /*
+     * Get the robot's current angle as a simulated Rotation2d.
+     * 
+     * @return Robot's current angle
+     */
+    public Rotation2d getRotation2d() {
+     
+        for(int i = 0; i < moduleCount; i++){
+            deltaPositions[i] = simSwerveModules[i].getModuleDelta();
         }
 
+        var twist = kinematics.toTwist2d(deltaPositions);
+    
+        robotAngle = robotAngle.plus(new Rotation2d(twist.dtheta));
+        return robotAngle;
+        
+
     }
 
-    /**
-     * Get the average omega (radians per second) for all swerve modules.
-     * @param refresh Whether to refresh the state from simulation
-     * @return Average omega (radians per second)
-     */
-    //temporary gyro replacement(?)
-    public double getAverageOmegaRadiansPerSecond(boolean refresh) {
-        SwerveModuleState[] states = getStates(refresh);
-        var speeds = kinematics.toChassisSpeeds(states);
-        return speeds.omegaRadiansPerSecond * Math.PI/180;
-    }
 
-    public double getYaw(){
-        //multiplied my 1000 milliseconds to get the yaw in degrees
-        yaw += getAverageOmegaRadiansPerSecond(false) * 1000;
-        return yaw;
-    }
-
-    public Rotation2d getRotation2d(){
-        var twist = kinematics.toTwist2d(getPositions(true));
-        Rotation2d simRotation = new Rotation2d(twist.dtheta * Math.PI);
-        return simRotation;
-    }
 }

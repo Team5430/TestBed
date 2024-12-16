@@ -1,109 +1,119 @@
 package com.team5430.simulation;
 
-
-import com.team5430.swerve.SwerveModuleConstants;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import edu.wpi.first.wpilibj.Timer;
 
-public class SimSwerveModule {
 
-  //TODO: look over; review
-    SwerveModuleConstants constants = new SwerveModuleConstants();
+public class SimSwerveModule
+{
 
-    protected DCMotorSim steerSim
-        = new DCMotorSim(DCMotor.getFalcon500(1), constants.steerRatio, 0.004096955);
+  //THANKS TO BRONC BOTZ FOR THIS WORK OF ART
+  // * Do note this is modified to include getting the change in module position as to use for a simulated gyroscope
 
-    protected FlywheelSim throttleSim
-        = new FlywheelSim(DCMotor.getKrakenX60(1), constants.throttleRatio, 0.025);
+  /**
+   * Main timer to simulate the passage of time.
+   */
+  private final Timer             timer;
+  /**
+   * Time delta since last update
+   */
+  private       double            dt;
+  /**
+   * Fake motor position.
+   */
+  private       double            pos;
+  /**
+   * The fake speed of the previous state, used to calculate {@link SimSwerveModule#fakePos}.
+   */
+  private       double            speed;
+  /**
+   * Last time queried.
+   */
+  private       double            lastTime;
 
-    private double steerAngle = 0.0;
-    private double throttleSpeed = 0.0;
-    private double throttlePos = 0.0;
+  private       double             lastPos;
 
-  private SwerveModulePosition position = new SwerveModulePosition();
-  private SwerveModuleState state = new SwerveModuleState();
+  /**
+   * Current simulated swerve module state.
+   */
+  private       SwerveModuleState state;
+  private SwerveModulePosition last;
 
-    public SimSwerveModule(){}
 
-  public void setState(SwerveModuleState desiredState) {
-    // Set steer angle and throttle speed based on the desired state
-    this.state = desiredState;
-    this.setSteerAngle(desiredState.angle.getDegrees());
-    this.setThrottleSpeed(desiredState.speedMetersPerSecond);
+
+  /**
+   * Create simulation class and initialize module at 0.
+   */
+  public SimSwerveModule()
+  {
+    timer = new Timer();
+    timer.start();
+    lastTime = timer.get();
+    state = new SwerveModuleState(0, Rotation2d.fromDegrees(0));
+    speed = 0;
+    pos = 0;
+    dt = 0;
+    lastPos = 0;
+    last = new SwerveModulePosition(0, Rotation2d.fromDegrees(0));
   }
 
-  public SwerveModuleState getState(boolean refresh) {
-    if (refresh) {
-      this.state.angle = new Rotation2d(getSteerAngle());
-      this.state.speedMetersPerSecond = getThrottleVelocityRadPerSec();
-    }
-    return this.state;
+  /**
+   * Update the position and state of the module. Called from {@link swervelib.SwerveModule#setDesiredState} function
+   * when simulated.
+   *
+   * @param desiredState State the swerve module is set to.
+   */
+  public void updateStateAndPosition(SwerveModuleState desiredState)
+  {
+    //get time delta
+    dt = timer.get() - lastTime;
+    lastTime = timer.get();
+
+    
+    state = desiredState;
+    speed = desiredState.speedMetersPerSecond;
+
+    pos += (speed * dt);
+
+    lastPos = pos;
   }
 
-  //TODO: fix distanceMeters
-  public SwerveModulePosition getPosition(boolean refresh) {
-    if (refresh) {
-      this.position.angle = new Rotation2d(getSteerAngle());
-      this.position.distanceMeters = throttlePos;
-    }
-    return this.position;
+  /**
+   * Get the simulated swerve module position.
+   *
+   * @return {@link SwerveModulePosition} of the simulated module.
+   */
+  public SwerveModulePosition getPosition()
+  {
+
+    return new SwerveModulePosition(pos, state.angle);
   }
-//set and get are inconsistent BEWARE
-    public void setSteerAngle(double angle) {
-        this.steerAngle = angle;
-    }
 
-    public double getSteerAngle() {
-        return this.steerAngle;
-    }
+  /**
+   * get the change in the simulated swerve module position
+   * @return {@link SwerveModulePosition} of the simulated module.
+   */
+  public SwerveModulePosition getModuleDelta(){
 
-    public void setThrottleSpeed(double speed) {
-        this.throttleSpeed = speed;
-    }
+    var delta = new SwerveModulePosition(getPosition().distanceMeters - last.distanceMeters, state.angle);
 
-    public double getThrottleSpeed() {
-        return this.throttleSpeed;
-    }
+     last = new SwerveModulePosition(lastPos, state.angle);
 
-    /** Run periodically to update the simulation*/
-    public void updateSim(double dt) {
-        // Update the motors using input speed
-        steerSim.setInputVoltage(throttleSpeed);
-        steerSim.update(dt);
+    return delta;
 
-        throttleSim.setInputVoltage(throttleSpeed);
-        throttleSim.update(dt);
+  }
 
-        double angleDiffRad = steerSim.getAngularVelocityRadPerSec() * .02;
-        throttlePos += angleDiffRad;
-        throttlePos = throttlePos + angleDiffRad;
-    }
-
-    //position values kind of suck for simulating a Swerve module; use saved {@code steerAngle} instead
-    //(most likely user fault thought, so if you can try to make it work)
-    public double getSteerAngularPositionRotations() {
-        return steerSim.getAngularPositionRad();
-    }
-
-    public double getPos() {
-      
-        return steerSim.getAngularPositionRad() * Math.PI;
-    }
-
-    //these are `
-    public double getSteerVelocityRadPerSec() {
-        return steerSim.getAngularVelocityRadPerSec();
-    }
-
-    public double getThrottleVelocityRadPerSec() {
-        return throttleSim.getAngularVelocityRadPerSec();
-    }
+  /**
+   * Get the {@link SwerveModuleState} of the simulated module.
+   *
+   * @return {@link SwerveModuleState} of the simulated module.
+   */
+  public SwerveModuleState getState()
+  {
+    return state;
+  }
 
 
 }
-
-   
