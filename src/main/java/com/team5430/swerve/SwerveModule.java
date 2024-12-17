@@ -3,6 +3,7 @@ package com.team5430.swerve;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
@@ -18,12 +19,12 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 
 /**
- * The {@code SwerveModule} class represents a single swerve drive module,
+ * The {@code SwerveModule} class represents a single swerve throttle module,
  * including its motors and encoder, and provides methods to control and
  * retrieve the module's state.
  * <p>
  * This class handles the initialization, configuration, and control of
- * the swerve module's drive and steering motors and the CANcoder encoder.
+ * the swerve module's throttle and steering motors and the CANcoder encoder.
  * The swerve module's state (including position and velocity) can be set
  * and retrieved using this class.
  */
@@ -39,8 +40,8 @@ public class SwerveModule {
   protected SwerveModuleState internalState = new SwerveModuleState();
   protected SwerveModuleConstants constants = new SwerveModuleConstants();
 
-  private final StatusSignal<Double> drivePosition;
-  private final StatusSignal<Double> driveVelocity;
+  private final StatusSignal<Double> throttlePosition;
+  private final StatusSignal<Double> throttleVelocity;
   private final StatusSignal<Double> steeringPosition;
   private final StatusSignal<Double> angularVelocity;
 
@@ -65,10 +66,10 @@ public class SwerveModule {
     motorConfig();
 
     // Initialize sensor signals for position and velocity
-    this.drivePosition = throttleMotor.getPosition();
-      drivePosition.setUpdateFrequency(25);
-    this.driveVelocity = throttleMotor.getVelocity();
-      driveVelocity.setUpdateFrequency(25);
+    this.throttlePosition = throttleMotor.getPosition();
+      throttlePosition.setUpdateFrequency(25);
+    this.throttleVelocity = throttleMotor.getVelocity();
+      throttleVelocity.setUpdateFrequency(25);
     this.steeringPosition = steeringMotor.getPosition();
       steeringPosition.setUpdateFrequency(25);
     this.angularVelocity = steeringMotor.getVelocity();
@@ -76,15 +77,15 @@ public class SwerveModule {
 
     // Store signals in an array for easier management
     this.signals = new BaseStatusSignal[4];
-    this.signals[0] = drivePosition;
-    this.signals[1] = driveVelocity;
+    this.signals[0] = throttlePosition;
+    this.signals[1] = throttleVelocity;
     this.signals[2] = steeringPosition;
     this.signals[3] = angularVelocity;
   }
 
   public SwerveModule() {
-    this.drivePosition = null;
-    this.driveVelocity = null;
+    this.throttlePosition = null;
+    this.throttleVelocity = null;
     this.steeringPosition = null;
     this.angularVelocity = null;
   }
@@ -93,45 +94,48 @@ public class SwerveModule {
    */
   private void motorConfig() {
     try {
-      // Apply configurations to the steering motor, drive motor, and encoder
-      
-    // create config objects
-    TalonFXConfiguration angleConfig = new TalonFXConfiguration();
-    TalonFXConfiguration driveConfig = new TalonFXConfiguration();
-    CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
 
-    angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
-    // gear ratio
-    angleConfig.Feedback.SensorToMechanismRatio = constants.steerRatio;
-    // proportional gains
-    angleConfig.Slot0.kP = constants.steer_kP;
-    driveConfig.Slot0.kP = constants.throttle_kP;
+  // Create configuration objects
+TalonFXConfiguration steerConfig = new TalonFXConfiguration();
+TalonFXConfiguration throttleConfig = new TalonFXConfiguration();
+CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
 
-    // max amperage
-    driveConfig.CurrentLimits.SupplyCurrentLimit = 30;
-    driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+// Steer configuration
+steerConfig.ClosedLoopGeneral.ContinuousWrap = true;
+steerConfig.Feedback.SensorToMechanismRatio = constants.steerRatio;
+steerConfig.Slot0.kP = constants.steer_kP;
+steerConfig.Feedback.FeedbackRemoteSensorID = CANCoder.getDeviceID();
+steerConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
 
-    driveConfig.CurrentLimits.SupplyCurrentThreshold = 0.1;
-    driveConfig.Feedback.SensorToMechanismRatio = constants.throttleRatio;
-    // max of 10 volts allows
-    driveConfig.Voltage.PeakForwardVoltage = 10;
-    driveConfig.Voltage.PeakReverseVoltage = -10;
+// Throttle configuration
+throttleConfig.Slot0.kP = constants.throttle_kP;
+throttleConfig.CurrentLimits.SupplyCurrentLimit = 30;
+throttleConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+throttleConfig.CurrentLimits.SupplyCurrentThreshold = 0.1;
+throttleConfig.Feedback.SensorToMechanismRatio = constants.throttleRatio;
+throttleConfig.Voltage.PeakForwardVoltage = 10;
+throttleConfig.Voltage.PeakReverseVoltage = -10;
 
-    encoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
-    encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
-    encoderConfig.MagnetSensor.MagnetOffset = constants.STEERING_MODULE_OFFSET[ModuleNumber];
+// Encoder configuration
+encoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
+encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+encoderConfig.MagnetSensor.MagnetOffset = constants.STEERING_MODULE_OFFSET[ModuleNumber];
 
-    angleConfig.Feedback.FeedbackRemoteSensorID = CANCoder.getDeviceID();
-    angleConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+//TODO: test
+// Motion magic configuration
+var config = new MotionMagicConfigs()
+    .withMotionMagicCruiseVelocity(100 / constants.steerRatio)
+    .withMotionMagicAcceleration((100 / constants.steerRatio) / 0.1)
+    .withMotionMagicExpo_kV(0.12 * constants.steerRatio)
+    .withMotionMagicExpo_kA(0.1);
 
-    // apply configurations
-    steeringMotor.getConfigurator().apply(angleConfig);
-    throttleMotor.getConfigurator().apply(driveConfig);
-    CANCoder.getConfigurator().apply(encoderConfig);
+// Apply configurations
+steeringMotor.getConfigurator().apply(steerConfig);
+throttleMotor.getConfigurator().apply(throttleConfig);
+CANCoder.getConfigurator().apply(encoderConfig);
 
-    // zero encoders
-
-    steeringMotor.setPosition(constants.STEERING_MODULE_OFFSET[ModuleNumber]);
+// Zero steer encoder
+steeringMotor.setPosition(constants.STEERING_MODULE_OFFSET[ModuleNumber]);
 
 
     } catch (Exception e) {
@@ -158,7 +162,7 @@ public class SwerveModule {
     state.speedMetersPerSecond *= state.angle.minus(currentAngle).getCos();
     double wantedVelocity = state.speedMetersPerSecond;
 
-    // Set the drive motor to the desired speed
+    // Set the throttle motor to the desired speed
     throttleMotor.setControl(new VelocityDutyCycle(wantedVelocity));
   }
 
@@ -171,18 +175,18 @@ public class SwerveModule {
   public SwerveModulePosition getPosition(boolean refresh) {
     if (refresh) {
       // Refresh sensor readings
-      drivePosition.refresh();
-      driveVelocity.refresh();
+      throttlePosition.refresh();
+      throttleVelocity.refresh();
       steeringPosition.refresh();
       angularVelocity.refresh();
     }
 
-    // Get compensated drive rotations and angle rotations
-    double driveRotations = BaseStatusSignal.getLatencyCompensatedValue(drivePosition, driveVelocity);
+    // Get compensated throttle rotations and angle rotations
+    double throttleRotations = BaseStatusSignal.getLatencyCompensatedValue(throttlePosition, throttleVelocity);
     double angleRotations = BaseStatusSignal.getLatencyCompensatedValue(steeringPosition, angularVelocity);
 
     // Set the internal position with updated values
-    internalPosition.distanceMeters = driveRotations;
+    internalPosition.distanceMeters = throttleRotations;
     internalPosition.angle = Rotation2d.fromRotations(angleRotations);
 
     return internalPosition;
@@ -197,20 +201,20 @@ public class SwerveModule {
   public SwerveModuleState getState(boolean refresh) {
     if (refresh) {
       // Refresh readings
-      driveVelocity.refresh();
+      throttleVelocity.refresh();
       steeringPosition.refresh();
     }
 
     // Update internal state with current sensor values
     internalState.angle = Rotation2d.fromDegrees(steeringPosition.getValue());
-    internalState.speedMetersPerSecond = driveVelocity.getValue();
+    internalState.speedMetersPerSecond = throttleVelocity.getValue();
 
     return internalState;
   }
 
  
   /**
-   * Stops both the steering and drive motors of the swerve module.
+   * Stops both the steering and throttle motors of the swerve module.
    */
   public void Stop() {
     // Stop the motors
