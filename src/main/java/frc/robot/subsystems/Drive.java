@@ -7,7 +7,6 @@ import com.team5430.control.ControlSystem;
 import com.team5430.simulation.SimSwerveModuleGroup;
 import com.team5430.swerve.SwerveModuleConstants;
 import com.team5430.swerve.SwerveModuleGroup;
-import com.team5430.util.TernaryVoid;
 import com.team5430.util.booleans;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -90,15 +89,7 @@ public class Drive extends ControlSystem {
 
     // Drive methods
     public void control(ChassisSpeeds input) {
-        new TernaryVoid(
-            booleans.RobotisReal(),
-            () -> new TernaryVoid(
-                () -> isFieldCentric,
-                () -> driveTrain.fieldCentricDrive(input, getRotation2d()),
-                () -> driveTrain.robotRelativeDrive(input)
-            ),
-            () -> simDriveTrain.fieldCentricDrive(input, getRotation2d())
-        );
+        driveTrain.fieldCentricDrive(input, getRotation2d());
     }
     
 

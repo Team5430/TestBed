@@ -2,10 +2,16 @@ package com.team5430.swerve;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -88,9 +94,46 @@ public class SwerveModule {
   private void motorConfig() {
     try {
       // Apply configurations to the steering motor, drive motor, and encoder
-      steeringMotor.getConfigurator().apply(constants.steerConfig(ModuleNumber));
-      throttleMotor.getConfigurator().apply(constants.throttleConfig());
-      CANCoder.getConfigurator().apply(constants.encoderConfig(ModuleNumber));
+      
+    // create config objects
+    TalonFXConfiguration angleConfig = new TalonFXConfiguration();
+    TalonFXConfiguration driveConfig = new TalonFXConfiguration();
+    CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
+
+    angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
+    // gear ratio
+    angleConfig.Feedback.SensorToMechanismRatio = constants.steerRatio;
+    // proportional gains
+    angleConfig.Slot0.kP = constants.steer_kP;
+    driveConfig.Slot0.kP = constants.throttle_kP;
+
+    // max amperage
+    driveConfig.CurrentLimits.SupplyCurrentLimit = 30;
+    driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    driveConfig.CurrentLimits.SupplyCurrentThreshold = 0.1;
+    driveConfig.Feedback.SensorToMechanismRatio = constants.throttleRatio;
+    // max of 10 volts allows
+    driveConfig.Voltage.PeakForwardVoltage = 10;
+    driveConfig.Voltage.PeakReverseVoltage = -10;
+
+    encoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
+    encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+    encoderConfig.MagnetSensor.MagnetOffset = constants.STEERING_MODULE_OFFSET[ModuleNumber];
+
+    angleConfig.Feedback.FeedbackRemoteSensorID = CANCoder.getDeviceID();
+    angleConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+
+    // apply configurations
+    steeringMotor.getConfigurator().apply(angleConfig);
+    throttleMotor.getConfigurator().apply(driveConfig);
+    CANCoder.getConfigurator().apply(encoderConfig);
+
+    // zero encoders
+
+    steeringMotor.setPosition(constants.STEERING_MODULE_OFFSET[ModuleNumber]);
+
+
     } catch (Exception e) {
       // Report any errors encountered during configuration
       DriverStation.reportError("Error setting Swerve Module: " + ModuleNumber + " configuration", e.getStackTrace());

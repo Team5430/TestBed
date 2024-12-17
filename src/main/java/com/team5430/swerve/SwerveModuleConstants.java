@@ -1,17 +1,5 @@
 package com.team5430.swerve;
 
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.configs.ClosedLoopGeneralConfigs;
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.FeedbackConfigs;
-import com.ctre.phoenix6.configs.MagnetSensorConfigs;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.configs.VoltageConfigs;
-import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
@@ -78,75 +66,4 @@ public class SwerveModuleConstants {
                 new PIDConstants(1),
                 MAX_OMEGA_RADIANS,
                 DRIVE_BASE_RADIUS);
-
-  /**
-   * Generates configuration for the steering TalonFX.
-   *
-   * @param moduleNumber The module number for indexing into arrays.
-   * @return The TalonFX configuration for the steering motor.
-   */
-  public TalonFXConfiguration steerConfig(int moduleNumber) {
-    // Continuous wrap configuration for steering
-    ClosedLoopGeneralConfigs continuousWrapConfig = new ClosedLoopGeneralConfigs();
-    continuousWrapConfig.ContinuousWrap = true;
-
-    return new TalonFXConfiguration()
-            .withSlot0(
-                    // PID slot configuration with proportional gain
-                    new Slot0Configs()
-                            .withKP(steer_kP))
-            .withMotionMagic(
-                    // Motion magic configuration for cruise velocity, acceleration, with expo
-                    new MotionMagicConfigs()
-                            .withMotionMagicCruiseVelocity(100 / steerRatio)
-                            .withMotionMagicAcceleration((100 / steerRatio)/ .1)
-                            .withMotionMagicExpo_kV(.12 * steerRatio)
-                            .withMotionMagicExpo_kA(.1))
-            .withClosedLoopGeneral(continuousWrapConfig)
-            .withFeedback(
-                    // Feedback configuration with rotor offset and remote CANcoder ID
-                    new FeedbackConfigs()
-                            .withFeedbackRotorOffset(STEERING_MODULE_OFFSET[moduleNumber])
-                            .withFeedbackRemoteSensorID(CANCODER_ID[moduleNumber])
-                            .withFeedbackSensorSource(FeedbackSensorSourceValue.RemoteCANcoder));
-  }
-
-  /**
-   * Generates configuration for the throttle TalonFX.
-   *
-   * @return The TalonFX configuration for the throttle motor.
-   */
-  public TalonFXConfiguration throttleConfig() {
-    return new TalonFXConfiguration()
-            .withSlot0(
-                    // PID slot configuration with proportional gain
-                    new Slot0Configs().withKP(throttle_kP))
-            .withCurrentLimits(
-                    // Current limit configuration
-                    new CurrentLimitsConfigs()
-                            .withSupplyCurrentLimit(30)
-                            .withSupplyCurrentLimitEnable(true)
-                            .withSupplyTimeThreshold(.1))
-            .withVoltage(
-                    // Voltage limit configuration for forward and reverse voltages
-                    new VoltageConfigs()
-                            .withPeakForwardVoltage(10)
-                            .withPeakReverseVoltage(-10));
-  }
-
-  /**
-   * Generates configuration for the CANcoder.
-   *
-   * @param moduleNumber The module number for indexing into arrays.
-   * @return The CANcoder configuration for the module.
-   */
-  public CANcoderConfiguration encoderConfig(int moduleNumber) {
-    return new CANcoderConfiguration()
-            .withMagnetSensor(
-                    // Magnet sensor configuration with sensor range, direction, and offset
-                    new MagnetSensorConfigs()
-                            .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf)
-                            .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-                            .withMagnetOffset(STEERING_MODULE_OFFSET[moduleNumber]));
-  }
 }

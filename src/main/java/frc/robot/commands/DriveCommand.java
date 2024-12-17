@@ -49,7 +49,7 @@ public class DriveCommand extends Command {
     
         // Apply inputs; invert to normal cordinate system 
         ChassisSpeeds inputs = new ChassisSpeeds(
-               -y* 5,
+               -y * 5,
                 -x * 5,
                 rotation * 5
         );
