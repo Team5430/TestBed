@@ -94,7 +94,7 @@ public class RobotContainer {
         mControllerManager
             .LeftBumper()
             .onTrue(new hangSub().Down())
-            .onFalse(new InstantCommand(m_HangSub::Stop));
+            .onFalse(new hangSub().Idle());
             
         // Auto aim and direct towards april tag in sight
         //TODO: test -> NOTE: overrides normal drive control !!!)

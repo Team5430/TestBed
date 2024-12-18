@@ -17,13 +17,13 @@ public abstract class ControlSystem implements Subsystem{
       //do some logic with this 
      public boolean hasEmergency = false; 
 
-     //stop the subsystem
-     public abstract void Stop();
+    //stop the subsystem
+    public abstract void Stop();
 
-     // Configure the subsystem for testing
-      public abstract boolean configureTest();
+    // Configure the subsystem for testing
+    public abstract boolean configureTest();
 
-      // Check the status of the subsystem
+    // Check the status of the subsystem
     public abstract boolean checkStatus();
 
 

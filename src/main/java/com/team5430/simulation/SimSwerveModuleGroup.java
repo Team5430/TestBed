@@ -12,7 +12,7 @@ public class SimSwerveModuleGroup {
     private int moduleCount;
     private SwerveDriveKinematics kinematics;
 
-
+// stats
     private Rotation2d robotAngle;
     private SwerveModulePosition[] deltaPositions;
 

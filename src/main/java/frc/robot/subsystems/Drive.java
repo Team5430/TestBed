@@ -111,8 +111,8 @@ public class Drive extends ControlSystem {
 //getters
     // Get heading as a Rotation2d
        public synchronized Rotation2d getRotation2d() {
-
-        var rotation2d = mGyro != null ? mGyro.getRotation2d() : simDriveTrain.getRotation2d();
+            //check if gyro is connected or not null before using sim data 
+        var rotation2d = mGyro != null || mGyro.isConnected() ? mGyro.getRotation2d() : simDriveTrain.getRotation2d();
             rotation2dRef.set(rotation2d);
         return rotation2dRef.get();
 
@@ -137,7 +137,7 @@ public class Drive extends ControlSystem {
 
     if(RobotState.isTest()){
         try {
-                control(new ChassisSpeeds(.1, .1, 1));
+                control(new ChassisSpeeds(.1, .1, Math.PI/4));
                 DriverStation.reportWarning("Drive Test Succeeded", false);
                 return true;
             } catch (Exception e) {

@@ -2,21 +2,14 @@ package com.team5430.swerve;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.DriverStation;
 
 /**
  * The {@code SwerveModule} class represents a single swerve throttle module,
@@ -58,12 +51,9 @@ public class SwerveModule {
     this.ModuleNumber = moduleNumber;
 
     // Initialize motors and encoder with their respective CAN IDs from the configuration
-    this.steeringMotor = new TalonFX(constants.STEERING_MODULE_MOTORID[moduleNumber]);
-    this.throttleMotor = new TalonFX(constants.THROTTLE_MODULE_MOTORID[moduleNumber]);
-    this.CANCoder = new CANcoder(constants.CANCODER_ID[moduleNumber]);
-
-    // Apply the motor and encoder configurations
-    motorConfig();
+    this.steeringMotor = config.buildSteerMotor(moduleNumber);
+    this.throttleMotor = config.buildThrottleMotor(moduleNumber);
+    this.CANCoder = config.buildCancoder(moduleNumber);
 
     // Initialize sensor signals for position and velocity
     this.throttlePosition = throttleMotor.getPosition();
@@ -89,63 +79,9 @@ public class SwerveModule {
     this.steeringPosition = null;
     this.angularVelocity = null;
   }
-  /**
-   * Configures the motors and encoder using the provided configuration constants.
-   */
-  private void motorConfig() {
-    try {
-
-  // Create configuration objects
-TalonFXConfiguration steerConfig = new TalonFXConfiguration();
-TalonFXConfiguration throttleConfig = new TalonFXConfiguration();
-CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
-
-// Steer configuration
-steerConfig.ClosedLoopGeneral.ContinuousWrap = true;
-steerConfig.Feedback.SensorToMechanismRatio = constants.steerRatio;
-steerConfig.Slot0.kP = constants.steer_kP;
-steerConfig.Feedback.FeedbackRemoteSensorID = CANCoder.getDeviceID();
-steerConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
-
-// Throttle configuration
-throttleConfig.Slot0.kP = constants.throttle_kP;
-throttleConfig.CurrentLimits.SupplyCurrentLimit = 30;
-throttleConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-throttleConfig.CurrentLimits.SupplyCurrentThreshold = 0.1;
-throttleConfig.Feedback.SensorToMechanismRatio = constants.throttleRatio;
-throttleConfig.Voltage.PeakForwardVoltage = 10;
-throttleConfig.Voltage.PeakReverseVoltage = -10;
-
-// Encoder configuration
-encoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
-encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
-encoderConfig.MagnetSensor.MagnetOffset = constants.STEERING_MODULE_OFFSET[ModuleNumber];
-
-//TODO: test
-// Motion magic configuration
-var config = new MotionMagicConfigs()
-    .withMotionMagicCruiseVelocity(100 / constants.steerRatio)
-    .withMotionMagicAcceleration((100 / constants.steerRatio) / 0.1)
-    .withMotionMagicExpo_kV(0.12 * constants.steerRatio)
-    .withMotionMagicExpo_kA(0.1);
-
-// Apply configurations
-steeringMotor.getConfigurator().apply(steerConfig);
-throttleMotor.getConfigurator().apply(throttleConfig);
-CANCoder.getConfigurator().apply(encoderConfig);
-
-// Zero steer encoder
-steeringMotor.setPosition(constants.STEERING_MODULE_OFFSET[ModuleNumber]);
-
-
-    } catch (Exception e) {
-      // Report any errors encountered during configuration
-      DriverStation.reportError("Error setting Swerve Module: " + ModuleNumber + " configuration", e.getStackTrace());
-    }
-  }
 
   /**
-   * Sets the state of the swerve module (angle and speed).
+   * Sets the state of the swerve module (angle   and speed).
    *
    * @param state The desired state (angle and speed) for the module.
    */
