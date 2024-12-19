@@ -21,7 +21,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
  * The swerve module's state (including position and velocity) can be set
  * and retrieved using this class.
  */
-public class SwerveModule {
+public class SwerveModuleIO implements ModuleIO {
 
   protected TalonFX steeringMotor;
   protected TalonFX throttleMotor;
@@ -46,7 +46,7 @@ public class SwerveModule {
    * @param moduleNumber The module number used to index into configuration arrays.
    * @param config The configuration constants for the swerve module.
    */
-  public SwerveModule(int moduleNumber, SwerveModuleConstants config) {
+  public SwerveModuleIO(int moduleNumber, SwerveModuleConstants config) {
     this.constants = config;
     this.ModuleNumber = moduleNumber;
 
@@ -73,7 +73,7 @@ public class SwerveModule {
     this.signals[3] = angularVelocity;
   }
 
-  public SwerveModule() {
+  public SwerveModuleIO() {
     this.throttlePosition = null;
     this.throttleVelocity = null;
     this.steeringPosition = null;
@@ -85,6 +85,7 @@ public class SwerveModule {
    *
    * @param state The desired state (angle and speed) for the module.
    */
+  @Override
   public void setState(SwerveModuleState state) {
     // Optimize the state angle to avoid rotating more than 180 degrees
     var optimize = SwerveModuleState.optimize(state, getState(true).angle);
@@ -108,6 +109,7 @@ public class SwerveModule {
    * @param refresh If true, updates the position and angle values by refreshing sensor readings.
    * @return The current position of the module.
    */
+  @Override
   public SwerveModulePosition getPosition(boolean refresh) {
     if (refresh) {
       // Refresh sensor readings
@@ -134,6 +136,7 @@ public class SwerveModule {
    * @param refresh If true, updates the state values by refreshing sensor readings.
    * @return The current state of the swerve module.
    */
+  @Override
   public SwerveModuleState getState(boolean refresh) {
     if (refresh) {
       // Refresh readings
@@ -148,10 +151,30 @@ public class SwerveModule {
     return internalState;
   }
 
+   /**
+   * Retrieves the change in the module's position since the last update.
+   */
+  @Override
+  public SwerveModulePosition getModuleDelta(){
+    return new SwerveModulePosition(getPosition(false).distanceMeters - internalPosition.distanceMeters, internalPosition.angle);
+  }
+ 
+  
+  /**
+   * Retrieves the current angle of the swerve module.
+   *
+   * @return The current angle of the swerve module.
+   */
+  @Override
+  public Rotation2d getRotation2d() {
+    return Rotation2d.fromDegrees(steeringPosition.getValue());
+  }
+
  
   /**
    * Stops both the steering and throttle motors of the swerve module.
    */
+  @Override
   public void Stop() {
     // Stop the motors
     steeringMotor.stopMotor();

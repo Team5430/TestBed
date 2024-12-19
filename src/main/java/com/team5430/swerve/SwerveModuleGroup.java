@@ -9,9 +9,13 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 public class SwerveModuleGroup {
 
   // Maximum of 4 swerve modules; accounted for array
-  protected SwerveModule[] swerveModules = new SwerveModule[4];
+  protected ModuleIO[] swerveModules = new ModuleIO[4];
   protected int moduleCount;
   protected SwerveModuleConstants constants;
+  
+  //back up heading
+  protected Rotation2d robotAngle;
+  protected SwerveModulePosition deltaPositions[];
 
   /**
    * Modular Swerve creation, can be used to create up to 4 modules at a time.
@@ -24,16 +28,24 @@ public class SwerveModuleGroup {
    *
    * to configure this to your use case, utilize SwerveModuleConstants
    *
-   * @param ModuleCount Allows creation of up to 4 SwerveModules, based on your given config
+   * @param modules Allows creation of up to 4 SwerveModules, based on your given config
    * @param config Configuration for the swerve modules
    * @see com.team5430.swerve.SwerveModuleConstants
    */
-  public SwerveModuleGroup(int ModuleCount, SwerveModuleConstants config) {
-    this.moduleCount = ModuleCount;
-    for (int i = 0; i < moduleCount; i++) {
-      this.swerveModules[i] = new SwerveModule(i, config);
-    }
+  public SwerveModuleGroup(SwerveModuleConstants config, ModuleIO... modules) {
+    this.moduleCount = modules.length;    
     this.constants = config;
+
+    this.robotAngle = Rotation2d.fromDegrees(0);
+
+
+    this.deltaPositions = new SwerveModulePosition[moduleCount];
+
+    for (int i = 0; i < moduleCount; i++) {
+      this.swerveModules[i] = modules[i];
+      this.deltaPositions[i] = new SwerveModulePosition(0, new Rotation2d(0));
+    }
+    
   }
 
   /** Set Module States to desired state */
@@ -68,7 +80,7 @@ public class SwerveModuleGroup {
 
   /** Stop all swerve modules */
   public void Stop() {
-    for (SwerveModule s : swerveModules) {
+    for (ModuleIO s : swerveModules) {
       s.Stop();
     }
   }
@@ -92,6 +104,24 @@ public class SwerveModuleGroup {
             swerveModules[3].getState(refresh)
     };
   }
+
+  //get back up heading in cae gyro fails
+  public Rotation2d getRotation2d() {
+//
+    // Get the change in the simulated swerve module position
+        for(int i = 0; i < moduleCount; i++){
+            deltaPositions[i] = swerveModules[i].getModuleDelta();
+        }
+        
+        var twist = constants.Kinematics.toTwist2d(deltaPositions);
+    // Get the robot's current angle as a simulated Rotation2d.
+        robotAngle = robotAngle.plus(new Rotation2d(twist.dtheta));
+        return robotAngle;
+        
+
+  }
+
+  
 
  
 

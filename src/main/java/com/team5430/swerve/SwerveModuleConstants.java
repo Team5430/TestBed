@@ -21,6 +21,7 @@ import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 
+// CONFIGURATIONS FOR SWERVE MODULES OVERALL
 public class SwerveModuleConstants {
 
   // Maximum velocity in meters per second
@@ -106,6 +107,7 @@ public class SwerveModuleConstants {
                 return motor;
   }
 
+  //TODO: MAKE SURE MAKING CTRE DEVICES LIKE THIS WORKS
   public TalonFX buildSteerMotor(int moduleNumber){
         
    var motor = new TalonFX(STEERING_MODULE_MOTORID[moduleNumber]);

@@ -4,9 +4,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.kauailabs.navx.frc.AHRS;
 import com.team5430.control.ControlSystem;
-import com.team5430.simulation.SimSwerveModuleGroup;
+import com.team5430.swerve.SimModuleIO;
 import com.team5430.swerve.SwerveModuleConstants;
 import com.team5430.swerve.SwerveModuleGroup;
+import com.team5430.swerve.SwerveModuleIO;
 import com.team5430.util.TernaryVoid;
 import com.team5430.util.booleans;
 
@@ -35,7 +36,6 @@ public class Drive extends ControlSystem {
 
     // Swerve DriveTrain options
     protected SwerveModuleGroup driveTrain;
-    protected SimSwerveModuleGroup simDriveTrain;
 
     //toggle depending on driver perference
     boolean isFieldCentric = true;
@@ -56,16 +56,25 @@ public class Drive extends ControlSystem {
         // Initialize based on robot type
         switch (booleans.getRobot()) {
             case REAL_ROBOT:
+
+                //create real drivetrain
                 mGyro = new AHRS(Port.kMXP);
-                driveTrain = new SwerveModuleGroup(4, mConfig);
+                driveTrain = new SwerveModuleGroup(mConfig,
+                    new SwerveModuleIO(0, mConfig),
+                    new SwerveModuleIO(1, mConfig),
+                    new SwerveModuleIO(2, mConfig),
+                    new SwerveModuleIO(3, mConfig));    
     
                 break;
 
             case SIM_ROBOT:
-            
 
                 //create sim drivetrain
-                simDriveTrain = new SimSwerveModuleGroup(4, mConfig.Kinematics);
+                driveTrain = new SwerveModuleGroup(mConfig,
+                    new SimModuleIO(),
+                    new SimModuleIO(),
+                    new SimModuleIO(),
+                    new SimModuleIO());
                 
                 //data publishing
                 mPublisher = NetworkTableInstance.getDefault()
@@ -90,15 +99,11 @@ public class Drive extends ControlSystem {
 
     // Drive methods
     public void control(ChassisSpeeds input) {
-        new TernaryVoid(
-            booleans.RobotisReal(),
-            () -> new TernaryVoid(
+             new TernaryVoid(
                 () -> isFieldCentric,
                 () -> driveTrain.fieldCentricDrive(input, getRotation2d()),
                 () -> driveTrain.robotRelativeDrive(input)
-            ),
-            () -> simDriveTrain.fieldCentricDrive(input, getRotation2d())
-        );
+            );
     }
     
 
@@ -109,30 +114,30 @@ public class Drive extends ControlSystem {
     }
     
 //getters
+
     // Get heading as a Rotation2d
-       public synchronized Rotation2d getRotation2d() {
-            //check if gyro is connected or not null before using sim data 
-        var rotation2d = mGyro != null || mGyro.isConnected() ? mGyro.getRotation2d() : simDriveTrain.getRotation2d();
-            rotation2dRef.set(rotation2d);
+     public synchronized Rotation2d getRotation2d() {
+            //check if gyro is connected or not null before using delta data 
+    rotation2dRef.set(mGyro != null ? mGyro.getRotation2d() : driveTrain.getRotation2d());
         return rotation2dRef.get();
 
     }
 
     //get robot modules positions !!!
-    public SwerveModulePosition[] getModulePositions(){
+    public synchronized SwerveModulePosition[] getModulePositions(){
         return Robot.isReal() 
-        ? driveTrain.getPositions(true) : simDriveTrain.getPositions(true);
+        ? driveTrain.getPositions(true) : driveTrain.getPositions(true);
     }
     
     //get robot input chassis speeds 
     public ChassisSpeeds getCurrentSpeeds(){
         return Robot.isReal() 
-        ? driveTrain.getCurrentSpeeds() : simDriveTrain.getCurrentSpeeds();
+        ? driveTrain.getCurrentSpeeds() : driveTrain.getCurrentSpeeds();
     }
 
 //control system implementation
-    @Override
     //run and rotate slowly
+    @Override
     public boolean configureTest(){
 
     if(RobotState.isTest()){
@@ -160,14 +165,14 @@ public class Drive extends ControlSystem {
     // Stops the DriveTrain
     @Override
     public synchronized void Stop() {
-        if (Robot.isReal()) driveTrain.Stop();
+        driveTrain.Stop();
         }
 
 
     //sim updating
     @Override 
     public void simulationPeriodic(){
-        mPublisher.set(simDriveTrain.getStates(true));
+        mPublisher.set(driveTrain.getStates(true));
         mGyroPublisher.set(getRotation2d());
     }
 }

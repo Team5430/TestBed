@@ -1,12 +1,13 @@
-package com.team5430.simulation;
+package com.team5430.swerve;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Timer;
 
 
-public class SimSwerveModule
+public class SimModuleIO implements ModuleIO
 {
 
   //THANKS TO BRONC BOTZ FOR THIS WORK OF ART
@@ -25,7 +26,7 @@ public class SimSwerveModule
    */
   private       double            pos;
   /**
-   * The fake speed of the previous state, used to calculate {@link SimSwerveModule#fakePos}.
+   * The fake speed of the previous state, used to calculate {@link SimModuleIO#fakePos}.
    */
   private       double            speed;
   /**
@@ -38,15 +39,15 @@ public class SimSwerveModule
   /**
    * Current simulated swerve module state.
    */
-  private       SwerveModuleState state;
+  private SwerveModuleState state;
   private SwerveModulePosition last;
 
 
 
   /**
-   * Create simulation class and initialize module at 0.
+   * Create simulation class and initialize everything at 0.
    */
-  public SimSwerveModule()
+  public SimModuleIO()
   {
     timer = new Timer();
     timer.start();
@@ -60,12 +61,13 @@ public class SimSwerveModule
   }
 
   /**
-   * Update the position and state of the module. Called from {@link swervelib.SwerveModule#setDesiredState} function
+   * Update the position and state of the module. Called from {@link SwerveModuleIO.SwerveModule#setDesiredState} function
    * when simulated.
    *
    * @param desiredState State the swerve module is set to.
    */
-  public void updateStateAndPosition(SwerveModuleState desiredState)
+  @Override
+  public void setState(SwerveModuleState desiredState)
   {
     //get time delta
     dt = timer.get() - lastTime;
@@ -85,19 +87,34 @@ public class SimSwerveModule
    *
    * @return {@link SwerveModulePosition} of the simulated module.
    */
-  public SwerveModulePosition getPosition()
+  @Override
+  public SwerveModulePosition getPosition(boolean refresh)
   {
-
     return new SwerveModulePosition(pos, state.angle);
   }
 
+
   /**
+   * Get the {@link SwerveModuleState} of the simulated module.
+   *
+   * @return {@link SwerveModuleState} of the simulated module.
+   */
+  @Override
+  public SwerveModuleState getState(boolean refresh)
+  {
+    state = new SwerveModuleState(speed, state.angle);
+
+    return state;
+  }
+
+    /**
    * get the change in the simulated swerve module position
    * @return {@link SwerveModulePosition} of the simulated module.
    */
+  @Override
   public SwerveModulePosition getModuleDelta(){
 
-    var delta = new SwerveModulePosition(getPosition().distanceMeters - last.distanceMeters, state.angle);
+    var delta = new SwerveModulePosition(getPosition(true).distanceMeters - last.distanceMeters, state.angle);
 
      last = new SwerveModulePosition(lastPos, state.angle);
 
@@ -105,14 +122,31 @@ public class SimSwerveModule
 
   }
 
+
   /**
-   * Get the {@link SwerveModuleState} of the simulated module.
-   *
-   * @return {@link SwerveModuleState} of the simulated module.
+   * Get the robot's current angle as a simulated Rotation2d.
+   * 
+   * @return Robot's current angle
    */
-  public SwerveModuleState getState()
-  {
-    return state;
+  @Override
+  public Rotation2d getRotation2d() {
+   
+    getModuleDelta();
+
+    var twist = new Twist2d(getModuleDelta().distanceMeters, 0, 0);
+  
+    Rotation2d moduleAngle = Rotation2d.fromDegrees(0);
+    moduleAngle = moduleAngle.plus(new Rotation2d(twist.dtheta));
+    return moduleAngle;
+    
+  } 
+
+  /**
+   * Stops the module.
+   */
+  @Override
+  public void Stop() {
+    setState(new SwerveModuleState());
   }
 
 
