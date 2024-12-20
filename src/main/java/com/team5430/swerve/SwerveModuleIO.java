@@ -2,10 +2,17 @@ package com.team5430.swerve;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
+import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -38,6 +45,7 @@ public class SwerveModuleIO implements ModuleIO {
   private final StatusSignal<Double> steeringPosition;
   private final StatusSignal<Double> angularVelocity;
 
+  protected MotionMagicExpoVoltage m_angleSetter = new MotionMagicExpoVoltage(0); 
   protected BaseStatusSignal[] signals;
 
   /**
@@ -51,9 +59,12 @@ public class SwerveModuleIO implements ModuleIO {
     this.ModuleNumber = moduleNumber;
 
     // Initialize motors and encoder with their respective CAN IDs from the configuration
-    this.steeringMotor = config.buildSteerMotor(moduleNumber);
-    this.throttleMotor = config.buildThrottleMotor(moduleNumber);
-    this.CANCoder = config.buildCancoder(moduleNumber);
+    this.steeringMotor = new TalonFX(config.STEERING_MODULE_MOTORID[moduleNumber]);
+    this.throttleMotor = new TalonFX(config.THROTTLE_MODULE_MOTORID[moduleNumber]);
+    this.CANCoder = new CANcoder(config.CANCODER_ID[moduleNumber]);
+
+    //configure the motors 
+    motorConfig();
 
     // Initialize sensor signals for position and velocity
     this.throttlePosition = throttleMotor.getPosition();
@@ -80,6 +91,46 @@ public class SwerveModuleIO implements ModuleIO {
     this.angularVelocity = null;
   }
 
+  private void motorConfig(){
+        // create config objects
+    TalonFXConfiguration angleConfig = new TalonFXConfiguration();
+    TalonFXConfiguration driveConfig = new TalonFXConfiguration();
+    CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
+    // gear ratio
+    angleConfig.Feedback.SensorToMechanismRatio = 1;
+    // proportional gains
+    angleConfig.Slot0.kP = constants.steer_kP;
+    driveConfig.Slot0.kP = constants.throttle_kP;
+    // max amperage
+    driveConfig.CurrentLimits.SupplyCurrentLimit = 30;
+    driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    driveConfig.CurrentLimits.SupplyCurrentThreshold = 0.1;
+    driveConfig.Feedback.SensorToMechanismRatio = constants.throttleRatio;
+    // max of 10 volts allows
+    driveConfig.Voltage.PeakForwardVoltage = 10;
+    driveConfig.Voltage.PeakReverseVoltage = -10;
+    encoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
+    encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+    encoderConfig.MagnetSensor.MagnetOffset = constants.STEERING_MODULE_OFFSET[ModuleNumber];
+    angleConfig.Feedback.FeedbackRemoteSensorID = CANCoder.getDeviceID();
+    angleConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+    angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
+
+    //motion magic
+    angleConfig.MotionMagic.MotionMagicCruiseVelocity = (100 / constants.steerRatio);
+    angleConfig.MotionMagic.MotionMagicAcceleration 
+      =  angleConfig.MotionMagic.MotionMagicCruiseVelocity/ .1;
+    angleConfig.MotionMagic.MotionMagicExpo_kV = (.12 * constants.steerRatio);
+    angleConfig.MotionMagic.MotionMagicExpo_kA = (.1);
+
+    
+    // apply configurations
+    steeringMotor.getConfigurator().apply(angleConfig);
+    throttleMotor.getConfigurator().apply(driveConfig);
+    CANCoder.getConfigurator().apply(encoderConfig);
+    // zero encoders
+    steeringMotor.setPosition(constants.STEERING_MODULE_OFFSET[ModuleNumber]);
+  }
   /**
    * Sets the state of the swerve module (angle   and speed).
    *
@@ -89,10 +140,10 @@ public class SwerveModuleIO implements ModuleIO {
   public void setState(SwerveModuleState state) {
     // Optimize the state angle to avoid rotating more than 180 degrees
     var optimize = SwerveModuleState.optimize(state, getState(true).angle);
-    double wantedRad = optimize.angle.getRadians();
+    double wantedRotations = optimize.angle.getRotations();
 
     // Set the steering motor to the desired angle
-    steeringMotor.setControl(new PositionDutyCycle(wantedRad / (2 * Math.PI)));
+    steeringMotor.setControl( new PositionDutyCycle(wantedRotations));
 
     // Adjust the speed based on the current and desired angles
     var currentAngle = state.angle;

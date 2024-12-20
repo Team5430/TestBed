@@ -1,19 +1,5 @@
 package com.team5430.swerve;
 
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.configs.ClosedLoopGeneralConfigs;
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.FeedbackConfigs;
-import com.ctre.phoenix6.configs.MagnetSensorConfigs;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.configs.VoltageConfigs;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
@@ -39,11 +25,11 @@ public class SwerveModuleConstants {
 
   // PID constants for steering and throttle
   protected double steer_kP = 0.95;
-  protected double throttle_kP = .15;
+  protected double throttle_kP = .1;
 
   // Module-specific offsets for steering
   // All arrays follow the order of A = 0, B = 1, C = 2, D = 3
-  public double[] STEERING_MODULE_OFFSET = {0.083, 0.02954, .27416, .44789};
+  public double[] STEERING_MODULE_OFFSET = {0.22192, -.2307, 0.114, 0.4921};
 
   // CAN IDs for steering motors
   public int[] STEERING_MODULE_MOTORID = {0, 2, 4, 6};
@@ -56,10 +42,10 @@ public class SwerveModuleConstants {
 
   // Module locations for kinematics calculations
   protected Translation2d[] ModuleLocations = {
-          new Translation2d(0.267, 0.267), // Back left (A)
-          new Translation2d(0.267, -0.267),   // Front right (B)
-          new Translation2d(-0.267, 0.267),  // Front left (C)
-          new Translation2d(-0.267, -0.267)   // Back right (D)
+          new Translation2d(0.267,0.267), // A)
+          new Translation2d(-0.267,-0.267),   // B
+          new Translation2d(0.267,- 0.267),  // C
+          new Translation2d(-0.267, 0.267)   // D
   };
 
   // Swerve drive kinematics
@@ -81,83 +67,4 @@ public class SwerveModuleConstants {
                 new PIDConstants(1),
                 MAX_OMEGA_RADIANS,
                 DRIVE_BASE_RADIUS);
-
-  public TalonFX buildThrottleMotor(int moduleNumber) {
-
-   var motor = new TalonFX(THROTTLE_MODULE_MOTORID[moduleNumber]);
-
-        motor.getConfigurator().apply(
-                new TalonFXConfiguration()
-            .withSlot0(
-                    // PID slot configuration with proportional gain
-                    new Slot0Configs().withKP(throttle_kP))
-            .withCurrentLimits(
-                    // Current limit configuration
-                    new CurrentLimitsConfigs()
-                            .withSupplyCurrentLimit(30)
-                            .withSupplyCurrentLimitEnable(true)
-                            .withSupplyTimeThreshold(.1))
-            .withVoltage(
-                    // Voltage limit configuration for forward and reverse voltages
-                    new VoltageConfigs()
-                            .withPeakForwardVoltage(10)
-                            .withPeakReverseVoltage(-10))
-        );
-
-                return motor;
-  }
-
-  //TODO: MAKE SURE MAKING CTRE DEVICES LIKE THIS WORKS
-  public TalonFX buildSteerMotor(int moduleNumber){
-        
-   var motor = new TalonFX(STEERING_MODULE_MOTORID[moduleNumber]);
-
-       // Continuous wrap configuration for steering
-    ClosedLoopGeneralConfigs continuousWrapConfig = new ClosedLoopGeneralConfigs();
-    continuousWrapConfig.ContinuousWrap = true;
-
-        motor.getConfigurator().apply(
-                new TalonFXConfiguration()
-            
-        .withSlot0(
-                    // PID slot configuration with proportional gain
-                    new Slot0Configs()
-                            .withKP(steer_kP))
-        .withMotionMagic(
-                    // Motion magic configuration for cruise velocity, acceleration, with expo
-                            new MotionMagicConfigs()
-                            .withMotionMagicCruiseVelocity(100 / steerRatio)
-                            .withMotionMagicAcceleration((100 / steerRatio)/ .1)
-                            .withMotionMagicExpo_kV(.12 * steerRatio)
-                            .withMotionMagicExpo_kA(.1))
-        .withClosedLoopGeneral(continuousWrapConfig)
-        .withFeedback(
-                    // Feedback configuration with rotor offset and remote CANcoder ID
-                    new FeedbackConfigs()
-                            .withFeedbackRotorOffset(STEERING_MODULE_OFFSET[moduleNumber])
-                            .withFeedbackRemoteSensorID(CANCODER_ID[moduleNumber])
-                            .withFeedbackSensorSource(FeedbackSensorSourceValue.RemoteCANcoder))
-        );
-
-                return motor;
-  }
-
-  public CANcoder buildCancoder(int moduleNumber){
-
-   var cancoder = new CANcoder(CANCODER_ID[moduleNumber]);
-
-    cancoder.getConfigurator().apply(
-                new CANcoderConfiguration()
-
-        .withMagnetSensor(
-                    // Magnet sensor configuration with sensor range, direction, and offset
-                    new MagnetSensorConfigs()
-                              .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf)
-                              .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-                              .withMagnetOffset(STEERING_MODULE_OFFSET[moduleNumber]))
-    );
-
-        return cancoder;
-        
-  }
 }
