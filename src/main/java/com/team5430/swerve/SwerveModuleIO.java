@@ -7,9 +7,9 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
@@ -17,6 +17,8 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Voltage;
 
 /**
  * The {@code SwerveModule} class represents a single swerve throttle module,
@@ -48,6 +50,8 @@ public class SwerveModuleIO implements ModuleIO {
   protected MotionMagicExpoVoltage m_angleSetter = new MotionMagicExpoVoltage(0); 
   protected BaseStatusSignal[] signals;
 
+  
+  protected CHARAZTERIZE type = CHARAZTERIZE.STEER;
   /**
    * Constructs a new {@code SwerveModule}.
    *
@@ -98,8 +102,15 @@ public class SwerveModuleIO implements ModuleIO {
     CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
     // gear ratio
     angleConfig.Feedback.SensorToMechanismRatio = 1;
-    // proportional gains
-    angleConfig.Slot0.kP = constants.steer_kP;
+    // gains
+    var angleSlot0 = angleConfig.Slot0;
+      angleSlot0.kS = constants.steer_kS;
+      angleSlot0.kV = constants.steer_kV;
+      angleSlot0.kA = constants.steer_kA;
+      angleSlot0.kP = constants.steer_kP;
+      angleSlot0.kI = constants.steer_kI;
+      angleSlot0.kD = constants.steer_kD;
+
     driveConfig.Slot0.kP = constants.throttle_kP;
     // max amperage
     driveConfig.CurrentLimits.SupplyCurrentLimit = 30;
@@ -114,14 +125,15 @@ public class SwerveModuleIO implements ModuleIO {
     encoderConfig.MagnetSensor.MagnetOffset = constants.STEERING_MODULE_OFFSET[ModuleNumber];
     angleConfig.Feedback.FeedbackRemoteSensorID = CANCoder.getDeviceID();
     angleConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
-    angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
-
+    
     //motion magic
-    angleConfig.MotionMagic.MotionMagicCruiseVelocity = (100 / constants.steerRatio);
-    angleConfig.MotionMagic.MotionMagicAcceleration 
-      =  angleConfig.MotionMagic.MotionMagicCruiseVelocity/ .1;
-    angleConfig.MotionMagic.MotionMagicExpo_kV = (.12 * constants.steerRatio);
-    angleConfig.MotionMagic.MotionMagicExpo_kA = (.1);
+    var angleMotionMagic = angleConfig.MotionMagic;
+      angleMotionMagic.MotionMagicCruiseVelocity = (100 / constants.steerRatio);
+      angleMotionMagic.MotionMagicAcceleration 
+        =  angleConfig.MotionMagic.MotionMagicCruiseVelocity/ .1;
+      angleMotionMagic.MotionMagicExpo_kV = (.12 * constants.steerRatio);
+      angleMotionMagic.MotionMagicExpo_kA = (.1);
+    angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
 
     
     // apply configurations
@@ -131,6 +143,7 @@ public class SwerveModuleIO implements ModuleIO {
     // zero encoders
     steeringMotor.setPosition(constants.STEERING_MODULE_OFFSET[ModuleNumber]);
   }
+  
   /**
    * Sets the state of the swerve module (angle   and speed).
    *
@@ -143,7 +156,7 @@ public class SwerveModuleIO implements ModuleIO {
     double wantedRotations = optimize.angle.getRotations();
 
     // Set the steering motor to the desired angle
-    steeringMotor.setControl( new PositionDutyCycle(wantedRotations));
+    steeringMotor.setControl(new PositionDutyCycle(wantedRotations));
 
     // Adjust the speed based on the current and desired angles
     var currentAngle = state.angle;
@@ -181,6 +194,7 @@ public class SwerveModuleIO implements ModuleIO {
     return internalPosition;
   }
 
+
   /**
    * Retrieves the current state (angle and speed) of the swerve module.
    *
@@ -202,6 +216,32 @@ public class SwerveModuleIO implements ModuleIO {
     return internalState;
   }
 
+  /**
+   * Sets the voltage output of the swerve module's motor.
+   *
+   * @param voltage The desired voltage output.
+   * @param type The type of motor to set the voltage to (steering or throttle).
+   */
+  @Override
+  public void setVoltage(Measure<Voltage> volts){
+    
+    //determine which motor to set voltage to
+    switch (type) {
+      
+      case STEER:
+         steeringMotor.setControl(new VoltageOut(volts.magnitude()));  
+        break;
+    
+      case THROTTLE:
+        throttleMotor.setControl(new VoltageOut(volts.magnitude()));
+        break;
+    }
+
+  }
+
+  public void setChracterize(CHARAZTERIZE type){
+    this.type = type;
+  }
    /**
    * Retrieves the change in the module's position since the last update.
    */

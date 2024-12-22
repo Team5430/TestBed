@@ -1,10 +1,11 @@
 package frc.robot.commands;
 
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Drive;
 
 import java.util.function.DoubleSupplier;
+
+import com.team5430.swerve.Requests.FieldCentricRequest;
 
 
 public class DriveCommand extends Command {
@@ -15,6 +16,7 @@ public class DriveCommand extends Command {
     // Double suppliers for human inputs
     private final DoubleSupplier xTranslation, yTranslation, rTranslation;
 
+    private final FieldCentricRequest request;
     /**
      * Command for driving the simulated DriveTrain
      * Same as DriveCommand, without any modifiers to inputs
@@ -29,6 +31,10 @@ public class DriveCommand extends Command {
             DoubleSupplier Y,
             DoubleSupplier Rotation,
             Drive subsystem) {
+
+        // Create request
+        request = new FieldCentricRequest();
+
         this.xTranslation = X;
         this.yTranslation = Y;
         this.rTranslation = Rotation;
@@ -40,22 +46,22 @@ public class DriveCommand extends Command {
 
     @Override
     public void execute() {
+        
         // Get inputs
         double x = xTranslation.getAsDouble();
         double y = yTranslation.getAsDouble();
         double rotation = rTranslation.getAsDouble();
 
+
     //TODO: the multipliier is meant to be the max speed of the robot -> better way to do so?
     
         // Apply inputs; invert to normal cordinate system 
-        ChassisSpeeds inputs = new ChassisSpeeds(
-               -y * 5,
-                -x * 5,
-                rotation * 5
-        );
-
+        request.withX(-x * 5)
+               .withY(-y * 5)
+               .withRot(rotation * 5);
+    
         // Drive with inputs
-        mDrive.control(inputs);
+        mDrive.control(request);
     }
 
     // Stop the drivetrain on end

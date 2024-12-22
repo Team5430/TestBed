@@ -4,7 +4,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.Timer;
+
 
 
 public class SimModuleIO implements ModuleIO
@@ -41,7 +44,6 @@ public class SimModuleIO implements ModuleIO
    */
   private SwerveModuleState state;
   private SwerveModulePosition last;
-
 
 
   /**
@@ -121,6 +123,10 @@ public class SimModuleIO implements ModuleIO
     return delta;
 
   }
+
+  @Override
+  /** TODO: Simulate motors with DC motors @{see edu.wpi.first.wpilibj.simulation.DCMotorSim} */
+  public void setVoltage(Measure<Voltage> volts) {}
 
 
   /**

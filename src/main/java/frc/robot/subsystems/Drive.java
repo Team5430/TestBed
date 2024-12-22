@@ -4,11 +4,12 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.kauailabs.navx.frc.AHRS;
 import com.team5430.control.ControlSystem;
+import com.team5430.swerve.Requests;
+import com.team5430.swerve.Requests.*;
 import com.team5430.swerve.SimModuleIO;
 import com.team5430.swerve.SwerveModuleConstants;
 import com.team5430.swerve.SwerveModuleGroup;
 import com.team5430.swerve.SwerveModuleIO;
-import com.team5430.util.TernaryVoid;
 import com.team5430.util.booleans;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -37,8 +38,6 @@ public class Drive extends ControlSystem {
     // Swerve DriveTrain options
     protected SwerveModuleGroup driveTrain;
 
-    //toggle depending on driver perference
-    boolean isFieldCentric = true;
 
     // Gyro
     public AHRS mGyro;
@@ -98,15 +97,14 @@ public class Drive extends ControlSystem {
     }
 
     // Drive methods
-    public void control(ChassisSpeeds input) {
-             new TernaryVoid(
-                () -> isFieldCentric,
-                () -> driveTrain.fieldCentricDrive(input, getRotation2d()),
-                () -> driveTrain.robotRelativeDrive(input)
-            );
+    public void control(Requests request) { 
+        driveTrain.control(request);
+    }
+
+    public void autoControl(ChassisSpeeds speeds) {
+        driveTrain.control(new RobotCentricRequest().withSpeeds(speeds));
     }
     
-
     // Zeros the gyro
     public synchronized void ResetHeading() {
         if (mGyro != null)
@@ -114,7 +112,6 @@ public class Drive extends ControlSystem {
     }
     
 //getters
-
     // Get heading as a Rotation2d
      public synchronized Rotation2d getRotation2d() {
             //check if gyro is connected or not null before using delta data 
@@ -142,7 +139,7 @@ public class Drive extends ControlSystem {
 
     if(RobotState.isTest()){
         try {
-                control(new ChassisSpeeds(.1, .1, Math.PI/4));
+                control(new TestRequest());
                 DriverStation.reportWarning("Drive Test Succeeded", false);
                 return true;
             } catch (Exception e) {
@@ -175,4 +172,5 @@ public class Drive extends ControlSystem {
         mPublisher.set(driveTrain.getStates(true));
         mGyroPublisher.set(getRotation2d());
     }
+    
 }

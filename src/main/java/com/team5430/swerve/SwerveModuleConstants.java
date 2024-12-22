@@ -6,11 +6,16 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 
 // CONFIGURATIONS FOR SWERVE MODULES OVERALL
 public class SwerveModuleConstants {
 
-  // Maximum velocity in meters per second
+
+
+// Maximum velocity in meters per second
   public double MAX_VELOCITY_MPS = 5;
 
   // Maximum angular velocity in radians per second
@@ -24,8 +29,22 @@ public class SwerveModuleConstants {
   public double throttleRatio = 8.14;
 
   // PID constants for steering and throttle
-  protected double steer_kP = 0.95;
-  protected double throttle_kP = .1;
+  public final double steer_kP = 0.95;
+
+  public final double steer_kI = 0;
+  
+  public final double steer_kD = 0;
+
+  //// A velocity target of 1 rps results in 0.12 V output
+  public final double steer_kV = .12;
+
+  // Add 0.25 V output to overcome static friction
+  public final double steer_kS = .24;
+
+  // An acceleration of 1 rps/s requires 0.01 V output
+  public final double steer_kA = .1;
+
+  public final double throttle_kP = .1;
 
   // Module-specific offsets for steering
   // All arrays follow the order of A = 0, B = 1, C = 2, D = 3
@@ -67,4 +86,12 @@ public class SwerveModuleConstants {
                 new PIDConstants(1),
                 MAX_OMEGA_RADIANS,
                 DRIVE_BASE_RADIUS);
+
+        // System identification configurations                
+
+        
+  public SysIdRoutine SysIdSwerve(Mechanism mechanism){
+        return new SysIdRoutine(new Config(), mechanism);
+  }
+
 }

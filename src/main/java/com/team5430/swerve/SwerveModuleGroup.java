@@ -6,6 +6,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 
+
 public class SwerveModuleGroup {
 
   // Maximum of 4 swerve modules; accounted for array
@@ -59,16 +60,23 @@ public class SwerveModuleGroup {
   }
 
   /** Forward is relative to the robot's forward */
+  @Deprecated
   public void robotRelativeDrive(ChassisSpeeds speeds) {
     SwerveModuleState[] states = constants.Kinematics.toSwerveModuleStates(speeds);
     setStates(states);
   }
 
   /** Drive with a gyroscope to keep heading relative to the field */
+  @Deprecated
   public void fieldCentricDrive(ChassisSpeeds speeds, Rotation2d robotAngle) {
     robotRelativeDrive(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, robotAngle));
   }
 
+  /**Drive Based on given request {@link com.team5430.swerve.Requests} */
+  public void control(Requests request){
+    SwerveModuleState[] states = constants.Kinematics.toSwerveModuleStates(request.Speeds());
+    setStates(states);
+  }
   /**
    * Get the current speeds of the robot.
    *
@@ -77,6 +85,7 @@ public class SwerveModuleGroup {
   public ChassisSpeeds getCurrentSpeeds() {
     return this.constants.Kinematics.toChassisSpeeds(getStates(true));
   }
+
 
   /** Stop all swerve modules */
   public void Stop() {
@@ -104,6 +113,7 @@ public class SwerveModuleGroup {
             swerveModules[3].getState(refresh)
     };
   }
+
 
   //get back up heading in cae gyro fails
   public Rotation2d getRotation2d() {

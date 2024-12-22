@@ -85,7 +85,7 @@ public void stop() {
                 this::getPose2d,
                 this::resetPose2d,
                 mDrive::getCurrentSpeeds,
-                mDrive::control,
+                mDrive::autoControl,
                 Constants.SwerveConstants.autoFollowerConfig,
                 booleans.shouldFlip(),
                 mDrive);

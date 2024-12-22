@@ -122,11 +122,19 @@ public class RobotContainer {
       // configure tests for each control system
       public void configureTests(){
 
-        var TestTab = Shuffleboard.getTab("Tests");
-        TestTab.add("Test Control Systems", testChooser);
+        var testTab = Shuffleboard.getTab("Tests");
+        
+        // Check if the widget already exists before adding it
+        if (testTab.getComponents().stream().noneMatch(component -> component.getTitle().equals("Test Control Systems"))) {
+          {
+            testTab.add("Test Control Systems", testChooser);
+          }
 
-        //  for use of when alerts ? -> new Trigger(testChooser::getSelected).onTrue(new Alert.set("Test"));
-        SmartDashboard.putBoolean("TEST RESULT:", testChooser.getSelected());       
+            // Check if the SmartDashboard entry already exists before adding it
+          if (!SmartDashboard.containsKey("TEST RESULT:")) {
+            SmartDashboard.putBoolean("TEST RESULT:", testChooser.getSelected());
+          }
+        } 
       }
 
       // stops and resets all control systems

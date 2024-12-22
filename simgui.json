@@ -53,6 +53,9 @@
     }
   },
   "NetworkTables": {
+    "Persistent Values": {
+      "open": false
+    },
     "transitory": {
       "5430_Camera": {
         "double[]##v_/5430_Camera/camerapose_robotspace_set": {
