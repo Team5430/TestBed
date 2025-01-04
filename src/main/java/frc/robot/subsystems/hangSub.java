@@ -1,15 +1,19 @@
 package frc.robot.subsystems;
 
+import java.io.File;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import com.team5430.control.ControlSystem;
-
-import frc.robot.Constants;
+import com.team5430.util.ConstantsParser;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 public class hangSub extends ControlSystem {
@@ -31,6 +35,8 @@ public class hangSub extends ControlSystem {
 
   }
 
+  private static ConstantsParser.LocalConstants constants;
+
   // Singleton instance
   protected static hangSub mInstance = new hangSub();
 
@@ -40,12 +46,23 @@ public class hangSub extends ControlSystem {
   
   public hangSub() {
 
+    // Parse constants
+    try {
+
+      constants = new ConstantsParser(new File(Filesystem.getDeployDirectory(), "constants/hangproperties.json")).getLocalConstants();
+
+    } catch (Exception e){
+      // If there is an error, throw a runtime exception
+      throw new RuntimeException(e);
+
+    }
     // init motors
-    L = new TalonSRX(Constants.CANConstants.LeftHangMotor);
-    R = new TalonSRX(Constants.CANConstants.RightHangMotor);
+    L = new TalonSRX(constants.getCANids()[0]);
+    R = new TalonSRX(constants.getCANids()[1]);
     
     // invert motor
     R.setInverted(true);
+
   }
 
 //set power to the hang

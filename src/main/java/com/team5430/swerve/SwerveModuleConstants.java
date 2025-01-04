@@ -13,9 +13,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 // CONFIGURATIONS FOR SWERVE MODULES OVERALL
 public class SwerveModuleConstants {
 
-
-
-// Maximum velocity in meters per second
+  // Maximum velocity in meters per second
   public double MAX_VELOCITY_MPS = 5;
 
   // Maximum angular velocity in radians per second
@@ -25,26 +23,26 @@ public class SwerveModuleConstants {
   public double DRIVE_BASE_RADIUS = .567;
 
   // Steering and throttle ratios
-  public double steerRatio = 150/7;
-  public double throttleRatio = 8.14;
+  public double STEER_RATIO = 150/7;
+  public double THROTTLE_RATIO = 8.14;
 
   // PID constants for steering and throttle
-  public final double steer_kP = 0.95;
+  public final double STEER_KP = 0.95;
 
-  public final double steer_kI = 0;
+  public final double STEER_KI = 0;
   
-  public final double steer_kD = 0;
+  public final double STEER_KD = 0;
 
   //// A velocity target of 1 rps results in 0.12 V output
-  public final double steer_kV = .12;
+  public final double STEER_KV = .12;
 
   // Add 0.25 V output to overcome static friction
-  public final double steer_kS = .24;
+  public final double STEER_KS = .24;
 
   // An acceleration of 1 rps/s requires 0.01 V output
-  public final double steer_kA = .1;
+  public final double STEER_KA = .1;
 
-  public final double throttle_kP = .1;
+  public final double THROTTLE_KP = .1;
 
   // Module-specific offsets for steering
   // All arrays follow the order of A = 0, B = 1, C = 2, D = 3
@@ -60,7 +58,7 @@ public class SwerveModuleConstants {
   public int[] CANCODER_ID = {0, 1, 2, 3};
 
   // Module locations for kinematics calculations
-  protected Translation2d[] ModuleLocations = {
+  protected Translation2d[] MODULE_LOCATIONS = {
           new Translation2d(0.267,0.267), // A)
           new Translation2d(-0.267,-0.267),   // B
           new Translation2d(0.267,- 0.267),  // C
@@ -68,11 +66,11 @@ public class SwerveModuleConstants {
   };
 
   // Swerve drive kinematics
-  public SwerveDriveKinematics Kinematics =
-          new SwerveDriveKinematics(ModuleLocations);
+  public SwerveDriveKinematics KINEMATICS =
+          new SwerveDriveKinematics(MODULE_LOCATIONS);
 
   // Autonomous speed configurations PATHPLANNER ONLY COMMENT OUT IF NOT NEEDED
-  public HolonomicPathFollowerConfig autoFollowerConfig =
+  public HolonomicPathFollowerConfig AUTO_FOLLOWER_CONFIG =
           new HolonomicPathFollowerConfig(
                   new PIDConstants(5),            // Chassis PID constants
                   new PIDConstants(2),            // Theta PID constants
@@ -80,16 +78,14 @@ public class SwerveModuleConstants {
                   DRIVE_BASE_RADIUS,              // Drive base radius
                   new ReplanningConfig());        // Replanning configurations
 
-  public PPHolonomicDriveController pathFollowerConfig = 
+  public PPHolonomicDriveController PATH_FOLLOWER_CONFIG = 
           new PPHolonomicDriveController(
                 new PIDConstants(1),
                 new PIDConstants(1),
                 MAX_OMEGA_RADIANS,
                 DRIVE_BASE_RADIUS);
 
-        // System identification configurations                
-
-        
+  // System identification configurations
   public SysIdRoutine SysIdSwerve(Mechanism mechanism){
         return new SysIdRoutine(new Config(), mechanism);
   }

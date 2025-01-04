@@ -104,19 +104,19 @@ public class SwerveModuleIO implements ModuleIO {
     angleConfig.Feedback.SensorToMechanismRatio = 1;
     // gains
     var angleSlot0 = angleConfig.Slot0;
-      angleSlot0.kS = constants.steer_kS;
-      angleSlot0.kV = constants.steer_kV;
-      angleSlot0.kA = constants.steer_kA;
-      angleSlot0.kP = constants.steer_kP;
-      angleSlot0.kI = constants.steer_kI;
-      angleSlot0.kD = constants.steer_kD;
+      angleSlot0.kS = constants.STEER_KS;
+      angleSlot0.kV = constants.STEER_KV;
+      angleSlot0.kA = constants.STEER_KA;
+      angleSlot0.kP = constants.STEER_KP;
+      angleSlot0.kI = constants.STEER_KI;
+      angleSlot0.kD = constants.STEER_KD;
 
-    driveConfig.Slot0.kP = constants.throttle_kP;
+    driveConfig.Slot0.kP = constants.THROTTLE_KP;
     // max amperage
     driveConfig.CurrentLimits.SupplyCurrentLimit = 30;
     driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     driveConfig.CurrentLimits.SupplyCurrentThreshold = 0.1;
-    driveConfig.Feedback.SensorToMechanismRatio = constants.throttleRatio;
+    driveConfig.Feedback.SensorToMechanismRatio = constants.THROTTLE_RATIO;
     // max of 10 volts allows
     driveConfig.Voltage.PeakForwardVoltage = 10;
     driveConfig.Voltage.PeakReverseVoltage = -10;
@@ -128,10 +128,10 @@ public class SwerveModuleIO implements ModuleIO {
     
     //motion magic
     var angleMotionMagic = angleConfig.MotionMagic;
-      angleMotionMagic.MotionMagicCruiseVelocity = (100 / constants.steerRatio);
+      angleMotionMagic.MotionMagicCruiseVelocity = (100 / constants.STEER_RATIO);
       angleMotionMagic.MotionMagicAcceleration 
         =  angleConfig.MotionMagic.MotionMagicCruiseVelocity/ .1;
-      angleMotionMagic.MotionMagicExpo_kV = (.12 * constants.steerRatio);
+      angleMotionMagic.MotionMagicExpo_kV = (.12 * constants.STEER_RATIO);
       angleMotionMagic.MotionMagicExpo_kA = (.1);
     angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
 

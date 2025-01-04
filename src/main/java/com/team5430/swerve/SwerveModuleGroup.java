@@ -62,7 +62,7 @@ public class SwerveModuleGroup {
   /** Forward is relative to the robot's forward */
   @Deprecated
   public void robotRelativeDrive(ChassisSpeeds speeds) {
-    SwerveModuleState[] states = constants.Kinematics.toSwerveModuleStates(speeds);
+    SwerveModuleState[] states = constants.KINEMATICS.toSwerveModuleStates(speeds);
     setStates(states);
   }
 
@@ -74,7 +74,7 @@ public class SwerveModuleGroup {
 
   /**Drive Based on given request {@link com.team5430.swerve.Requests} */
   public void control(Requests request){
-    SwerveModuleState[] states = constants.Kinematics.toSwerveModuleStates(request.Speeds());
+    SwerveModuleState[] states = constants.KINEMATICS.toSwerveModuleStates(request.Speeds());
     setStates(states);
   }
   /**
@@ -83,7 +83,7 @@ public class SwerveModuleGroup {
    * @return the angle and velocity of the robot
    */
   public ChassisSpeeds getCurrentSpeeds() {
-    return this.constants.Kinematics.toChassisSpeeds(getStates(true));
+    return this.constants.KINEMATICS.toChassisSpeeds(getStates(true));
   }
 
 
@@ -123,7 +123,7 @@ public class SwerveModuleGroup {
             deltaPositions[i] = swerveModules[i].getModuleDelta();
         }
         
-        var twist = constants.Kinematics.toTwist2d(deltaPositions);
+        var twist = constants.KINEMATICS.toTwist2d(deltaPositions);
     // Get the robot's current angle as a simulated Rotation2d.
         robotAngle = robotAngle.plus(new Rotation2d(twist.dtheta));
         return robotAngle;

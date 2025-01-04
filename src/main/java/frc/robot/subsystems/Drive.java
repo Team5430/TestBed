@@ -42,12 +42,13 @@ public class Drive extends ControlSystem {
     // Gyro
     public AHRS mGyro;
 
-    private static Drive mInstance = new Drive(); 
+    private static Drive mInstance;
 
     public final AtomicReference<Rotation2d> rotation2dRef = new AtomicReference<>(new Rotation2d());
 
     public static Drive getInstance(){
-        return mInstance;
+        if(mInstance == null) mInstance = new Drive();
+            return mInstance;
     }
 
     private Drive() {
@@ -101,6 +102,7 @@ public class Drive extends ControlSystem {
         driveTrain.control(request);
     }
 
+    //control robot autonmously 
     public void autoControl(ChassisSpeeds speeds) {
         driveTrain.control(new RobotCentricRequest().withSpeeds(speeds));
     }

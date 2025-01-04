@@ -16,11 +16,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class OdometryThread implements Runnable {
 
     private static final int SLEEP_DURATION_MS = 20;
 
+    
     //init subsystems
     private final Drive mDrive;
     @SuppressWarnings("unused")
@@ -34,6 +37,7 @@ public class OdometryThread implements Runnable {
     //thread management
     private final ExecutorService executorService;
     private Future<?> future;
+    private Lock lock = new ReentrantLock();
 
     public OdometryThread(Drive drive, Vision vision) {
         this.executorService = Executors.newSingleThreadExecutor();
@@ -50,20 +54,20 @@ public class OdometryThread implements Runnable {
         configurePathPlanner();
     }
 
- //starts the thread through executor service
-public void start() {
-    // Submit the thread and store in Future object
-    future = executorService.submit(this);
-}
-
-//stops the thread
-public void stop() {
-    // Cancel the task if it is running
-    if (future != null && !future.isDone()) {
-        future.cancel(true);
+    //starts the thread through executor service
+    public void start() {
+        // Submit the thread and store in Future object
+        future = executorService.submit(this);
     }
-    executorService.shutdownNow();
-}
+
+    //stops the thread
+    public void stop() {
+        // Cancel the task if it is running
+        if (future != null && !future.isDone()) {
+            future.cancel(true);
+        }
+        executorService.shutdownNow();
+    }
 
 
     //get pose2d
@@ -86,7 +90,7 @@ public void stop() {
                 this::resetPose2d,
                 mDrive::getCurrentSpeeds,
                 mDrive::autoControl,
-                Constants.SwerveConstants.autoFollowerConfig,
+                Constants.SwerveConstants.AUTO_FOLLOWER_CONFIG,
                 booleans.shouldFlip(),
                 mDrive);
     }
@@ -98,8 +102,8 @@ public void stop() {
         Thread.currentThread().setName("Odometry Thread");
 
         mPoseEstimator = new SwerveDrivePoseEstimator(
-                Constants.SwerveConstants.Kinematics, mDrive.getRotation2d(), mDrive.getModulePositions(), new Pose2d());
-
+                Constants.SwerveConstants.KINEMATICS, mDrive.getRotation2d(), mDrive.getModulePositions(), new Pose2d());
+        
                 //vision std deviations
         mPoseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.5, .5, .7));
 
@@ -107,7 +111,7 @@ public void stop() {
         while (true) {
 
             try {
-
+                lock.lock();
                 mPoseEstimator.update(mDrive.getRotation2d(), mDrive.getModulePositions());
 
                 pose2dReference.set(mPoseEstimator.getEstimatedPosition());
@@ -122,8 +126,12 @@ public void stop() {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
+                
             } catch (Exception e) {
                 DriverStation.reportError("Odometry thread exception: " + e.getMessage(), true);
+
+            } finally {
+                lock.unlock();
             }
         }
     }

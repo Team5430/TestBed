@@ -81,10 +81,7 @@ public class RobotContainer {
                   mControllerManager::getRightX,
                   mDrive));
       
-    
         configureBindings();
-    
-     
         
       }
         // controller bindings here

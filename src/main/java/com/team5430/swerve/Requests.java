@@ -19,7 +19,8 @@ import edu.wpi.first.units.Voltage;
  * 
  * Requests are used to control the robot's movement.
  * such as {@code FieldCentricRequest}, {@code RobotCentricRequest}, {@code StopRequest}, and {@code TestRequest}.
- *
+ * This can be used with any motors, it just needs setup for the usage of ChassisSpeeds.
+ * 
  */
 public interface Requests {
 
@@ -87,15 +88,17 @@ public interface Requests {
 
 
 //updating in speeds here when given inputs vs withSpeed ????????
-        public ChassisSpeeds Speeds(){
-           //TODO: modify for WithSpeeds
-                speedsToApply = new ChassisSpeeds(x, y, rot);
-            
+        public ChassisSpeeds Speeds(){            
             return speedsToApply; 
         }
 //setting speeds
         public FieldCentricRequest withSpeeds(ChassisSpeeds speeds){
             this.speedsToApply = speeds;
+            return this;
+        }
+//apply given inputs 
+        public FieldCentricRequest apply(){
+            this.speedsToApply = new ChassisSpeeds(x, y, rot);
             return this;
         }
 //get reported robot angle
